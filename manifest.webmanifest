@@ -1,9 +1,0 @@
-{
-  "name": "Hydro",
-  "short_name": "Hydro",
-  "start_url": "./",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#eaf6ff",
-  "description": "Hydro - diario dell'idratazione"
-}
