@@ -108,13 +108,12 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 <div class="card"><div class="title">⚙️ Impostazioni</div>
 <div class="row"><span><b>Obiettivo giornaliero</b><br><span class="small">ml</span></span><input id="goalInput" type="number" min="500" step="100" value="2000" onchange="setGoal()"></div>
 <div class="row"><span><b>Notifiche</b><br><span class="small" id="notifStatus">Permesso non richiesto</span></span><button id="notifBtn" class="chip" onclick="enableNotifications()">ATTIVA</button></div>
-<div class="row" style="display:block"><span><b>Web Push</b><br><span class="small">Necessario per i promemoria anche con app chiusa.</span></span><input id="vapidInput" type="text" autocomplete="off" placeholder="Incolla la chiave pubblica VAPID" style="width:100%;margin-top:9px;text-align:left"><button class="chip" style="margin-top:8px" onclick="saveVapidKey()">SALVA CHIAVE</button></div>
 <div class="row"><span><b>👤 Account</b><br><span class="small" id="accountStatus">Solo dispositivo</span></span><button class="chip" onclick="openAccountSheet()">ACCEDI</button></div><div class="row"><span><b>💾 Backup dati</b><br><span class="small">Esporta tutte le registrazioni in Excel (.xlsx)</span></span><button class="chip" onclick="exportXLSX()">ESPORTA</button></div>
 <div class="row"><span><b>Reset di oggi</b></span><button class="chip" style="background:#fff0f0;color:#d45555" onclick="resetDay()">Reset</button></div><div class="note" style="margin-top:10px">Il backup include assunzioni, obiettivo, profilo, promemoria e bevande personalizzate.</div>
 </div>
 <div class="card"><div class="title">➕ Bevande personalizzate</div><div class="note">Crea e gestisci le tue bevande con nome, icona, quantità predefinita e calorie personalizzate.</div><button class="primary" onclick="addCustomDrink()">＋ Crea bevanda</button></div>
 
-<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.3.0</div></div>
+<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.3.2</div></div>
 </section>
 </div>
 
@@ -130,21 +129,18 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-messaging-compat.js"></script>
 <script>
 // Configurazione Firebase: inserisci qui i valori della tua Web App Firebase.
 // La Firebase Web API key è pubblica per progettazione: la sicurezza dei dati è affidata a Firebase Auth + Firestore Security Rules.
 // Non inserire qui service-account private key, client secret o altre credenziali server.
 const FIREBASE_CONFIG={apiKey:"AIzaSyAzoriZ9E6_aGI1DKVs7WfKhQwMwhTwGvg",authDomain:"hydro-f2428.firebaseapp.com",projectId:"hydro-f2428",storageBucket:"hydro-f2428.firebasestorage.app",messagingSenderId:"311768311646",appId:"1:311768311646:web:4a255236e2dca3128411cf"};
-// Web Push VAPID: chiave pubblica generata in Firebase Console → Project settings → Cloud Messaging.
-// Puoi inserirla dalle Impostazioni di Hydro; non è una credenziale segreta.
-const FCM_VAPID_KEY_DEFAULT="";
 const FIREBASE_ENABLED=!!(FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.authDomain&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.appId);
-let firebaseApp=null,auth=null,db=null,messaging=null,currentUser=null,cloudSaveTimer=null,cloudReady=false,firebaseInitError=null;
-if(FIREBASE_ENABLED){try{firebaseApp=firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();try{messaging=firebase.messaging();}catch(e){console.warn("FCM messaging init",e)}auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e=>console.warn("Auth persistence",e));db.enablePersistence({synchronizeTabs:true}).then(()=>console.log("Firestore offline persistence enabled")).catch(e=>console.warn("Firestore offline persistence",e));}catch(e){firebaseInitError=e;console.error("Firebase init",e)}}
+let firebaseApp=null,auth=null,db=null,currentUser=null,cloudSaveTimer=null,cloudReady=false,firebaseInitError=null;
+if(FIREBASE_ENABLED){try{firebaseApp=firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e=>console.warn("Auth persistence",e));db.enablePersistence({synchronizeTabs:true}).then(()=>console.log("Firestore offline persistence enabled")).catch(e=>console.warn("Firestore offline persistence",e));}catch(e){firebaseInitError=e;console.error("Firebase init",e)}}
 </script>
 <script>
-const HYDRO_VERSION="8.3.1";
+const HYDRO_VERSION="8.3.2";
+localStorage.removeItem('hydroVapidKey');
 const defaultDrinks=[
 {name:'Acqua',icon:'💧',ml:250,kcal:0},{name:'Caffè',icon:'☕',ml:80,kcal:2},
 {name:'Cappuccino',icon:'🥛',ml:150,kcal:90},{name:'Coca-Cola',icon:'🥤',ml:330,kcal:139},{name:'Birra',icon:'🍺',ml:330,kcal:140},{name:'Tè',icon:'🍵',ml:250,kcal:2}
@@ -180,7 +176,7 @@ function addCustomDrink(){let name=prompt('Nome della bevanda?');if(!name)return
 update();
 
 let hydroPrefs=JSON.parse(localStorage.hydroPrefs||'null')||{name:'',age:'',weight:'',height:'',sex:'',activity:'',goalMode:'auto',remOn:true,smart:true,drinkSmart:true,interval:60};
-function savePrefs(){localStorage.hydroPrefs=JSON.stringify(hydroPrefs)}
+function savePrefs(){hydroPrefs._updatedAt=Date.now();localStorage.hydroPrefs=JSON.stringify(hydroPrefs);if(typeof firebaseSaveHook==='function')firebaseSaveHook()}
 function refreshExtended(){
  document.getElementById('profileName').textContent=hydroPrefs.name||'Il tuo profilo';document.getElementById('nameV').textContent=hydroPrefs.name||'—';document.getElementById('ageV').textContent=hydroPrefs.age?hydroPrefs.age+' anni':'—';document.getElementById('weightV').textContent=hydroPrefs.weight?hydroPrefs.weight+' kg':'—';document.getElementById('heightV').textContent=hydroPrefs.height?hydroPrefs.height+' cm':'—';document.getElementById('sexV').textContent=hydroPrefs.sex||'—';document.getElementById('activityV').textContent=hydroPrefs.activity||'Da configurare';document.getElementById('profileGoal').textContent=goal.toLocaleString('it-IT')+' ml';
  document.getElementById('remToggle').classList.toggle('on',hydroPrefs.remOn);document.getElementById('smartToggle').classList.toggle('on',hydroPrefs.smart);document.getElementById('drinkSmartToggle').classList.toggle('on',hydroPrefs.drinkSmart);document.getElementById('intVal').innerHTML='<b>'+hydroPrefs.interval+' min</b>';
@@ -321,7 +317,7 @@ async function resetAccountPassword(){
   try{await auth.sendPasswordResetEmail(email);accountMessage('Email per reimpostare la password inviata ✓')}catch(e){accountMessage(firebaseError(e))}
 }
 async function logoutAccount(){
-  try{await auth.signOut();currentUser=null;cloudReady=false;clearTimeout(cloudSaveTimer);goal=2000;data={[todayKey]:[]};drinks=JSON.parse(JSON.stringify(defaultDrinks));hydroPrefs=defaultHydroPrefs();localStorage.removeItem('hydroOwnerUid');localStorage.removeItem('hydroPushTokenId');saveLocalOnly();closeSheet();updateAccountUI();showAuthGate();accountMessage('Disconnesso ✓')}catch(e){accountMessage(firebaseError(e))}
+  try{await auth.signOut();currentUser=null;cloudReady=false;clearTimeout(cloudSaveTimer);goal=2000;data={[todayKey]:[]};drinks=JSON.parse(JSON.stringify(defaultDrinks));hydroPrefs=defaultHydroPrefs();localStorage.removeItem('hydroOwnerUid');saveLocalOnly();closeSheet();updateAccountUI();showAuthGate();accountMessage('Disconnesso ✓')}catch(e){accountMessage(firebaseError(e))}
 }
 function localPayload(){return {goal,data,drinks,hydroPrefs,version:HYDRO_VERSION,updatedAt:new Date().toISOString()}}
 function cloudPayload(){return {goal,data,drinks,hydroPrefs:{...hydroPrefs,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Rome'},version:HYDRO_VERSION,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}}
@@ -337,10 +333,26 @@ async function loadCloudData(){
       if(typeof p.goal==='number')goal=p.goal;
       if(p.data&&typeof p.data==='object')data=p.data;
       if(Array.isArray(p.drinks))drinks=p.drinks;
-      if(p.hydroPrefs&&typeof p.hydroPrefs==='object')hydroPrefs={...hydroPrefs,...p.hydroPrefs};
+      let keepLocalPrefs=false;
+      if(p.hydroPrefs&&typeof p.hydroPrefs==='object'){
+        const localPrefs={...hydroPrefs};
+        const cloudPrefs=p.hydroPrefs;
+        const localHasProfile=!!(localPrefs.name||localPrefs.age||localPrefs.weight||localPrefs.height||localPrefs.sex||localPrefs.activity);
+        const localTs=Number(localPrefs._updatedAt)||0;
+        const cloudTs=Number(cloudPrefs._updatedAt)||0;
+        // Older Hydro versions did not send profile changes to Firestore.
+        // If this device already belongs to the same account, preserve its
+        // existing profile instead of replacing it with a stale cloud copy.
+        if(owner===uid && localHasProfile && (!cloudTs || localTs>cloudTs)){
+          hydroPrefs=localPrefs;keepLocalPrefs=true;
+        }else{
+          hydroPrefs={...hydroPrefs,...cloudPrefs};
+        }
+      }
       saveLocalOnly();
       localStorage.setItem('hydroOwnerUid',uid);
       cloudReady=true;
+      if(keepLocalPrefs) await saveCloud(true);
       return true;
     }
     // Primo account: associa i dati locali esistenti. Account diverso senza dati cloud: parti pulito.
@@ -405,7 +417,6 @@ if(firebaseConfigured()){
       if(ok)accountMessage('Dati sincronizzati ✓');
       hideAuthGate();
       notificationState();
-      if(Notification.permission==='granted'&&getVapidKey()) registerPushToken(false);
     }else{
       goal=2000;data={[todayKey]:[]};drinks=JSON.parse(JSON.stringify(defaultDrinks));hydroPrefs=defaultHydroPrefs();
       update();updateExtended();showAuthGate();
@@ -431,70 +442,26 @@ window.addEventListener('online',()=>{updateNetworkStatus();if(currentUser){save
 window.addEventListener('offline',updateNetworkStatus);
 updateNetworkStatus();
 
-function getVapidKey(){return (localStorage.getItem('hydroVapidKey')||FCM_VAPID_KEY_DEFAULT||'').trim()}
-function setNotifText(status,button){const s=document.getElementById('notifStatus'),b=document.getElementById('notifBtn');if(s)s.textContent=status;if(b)b.textContent=button||'ATTIVA'}
 async function notificationState(){
-  const input=document.getElementById('vapidInput');if(input)input.value=getVapidKey();
-  const status=document.getElementById('notifStatus'),btn=document.getElementById('notifBtn');
+  const btn=document.getElementById('notifBtn');
   if(!('Notification' in window)){setNotifText('Non supportate in questo ambiente','NON DISPONIBILI');if(btn)btn.disabled=true;return;}
   const p=Notification.permission;
   if(p==='denied'){setNotifText('Bloccate — abilita dalle impostazioni del browser','IMPOSTAZIONI');return;}
-  if(p!=='granted'){setNotifText(getVapidKey()?'Permesso non richiesto':'Serve la chiave Web Push','ATTIVA');return;}
-  if(!getVapidKey()){setNotifText('Permesso attivo · manca la chiave Web Push','CONFIGURA');return;}
-  setNotifText('Permesso attivo · Web Push da configurare','ATTIVE');
+  if(p!=='granted'){setNotifText('Permesso non richiesto','ATTIVA');return;}
+  setNotifText('Permesso attivo','ATTIVE');
 }
-function saveVapidKey(){
-  const v=(document.getElementById('vapidInput')?.value||'').trim();
-  if(!v){localStorage.removeItem('hydroVapidKey');notificationState();toast2('Chiave rimossa');return;}
-  localStorage.setItem('hydroVapidKey',v);notificationState();toast2('Chiave Web Push salvata ✓');
-  if(currentUser)registerPushToken(true);
-}
-async function ensurePushRegistration(){
-  if(!('serviceWorker' in navigator)||!messaging||!currentUser)return null;
-  const reg=await navigator.serviceWorker.register('./firebase-messaging-sw.js',{scope:'./'});
-  return reg;
-}
-async function registerPushToken(showToast=false){
-  if(!currentUser){if(showToast)toast2('Accedi a Hydro prima di attivare le notifiche');return null;}
-  if(!('Notification' in window)||Notification.permission!=='granted'){if(showToast)await enableNotifications();return null;}
-  const vapid=getVapidKey();
-  if(!vapid){if(showToast)toast2('Inserisci la chiave pubblica VAPID nelle Impostazioni');return null;}
-  try{
-    const reg=await ensurePushRegistration();
-    const token=await messaging.getToken({vapidKey:vapid,serviceWorkerRegistration:reg});
-    if(!token)throw new Error('FCM token non disponibile');
-    const hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(token));
-    const tokenId=Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
-    await db.collection('users').doc(currentUser.uid).collection('pushTokens').doc(tokenId).set({token,platform:/iPhone|iPad|iPod/i.test(navigator.userAgent)?'ios-web':'web',userAgent:navigator.userAgent,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Rome',updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    localStorage.setItem('hydroPushTokenId',tokenId);
-    setNotifText('Web Push attivo ✓','ATTIVE');
-    if(showToast)toast2('Notifiche push attivate ✓');
-    return token;
-  }catch(e){
-    console.error('FCM registration',e);
-    setNotifText('Web Push non configurato','RIPROVA');
-    if(showToast)toast2('Impossibile attivare Web Push: '+(e.message||'controlla la chiave VAPID'));
-    return null;
-  }
-}
+function setNotifText(status,button){const s=document.getElementById('notifStatus'),b=document.getElementById('notifBtn');if(s)s.textContent=status;if(b)b.textContent=button||'ATTIVA'}
 async function enableNotifications(){
   if(!('Notification' in window)){toast2('Notifiche non supportate');return;}
   if(Notification.permission==='denied'){toast2('Abilita le notifiche dalle impostazioni del browser');return;}
   const p=await Notification.requestPermission();
   await notificationState();
-  if(p==='granted'){
-    localStorage.hydroNotifications='on';
-    if(!getVapidKey()){toast2('Permesso attivo. Ora inserisci la chiave VAPID nelle Impostazioni.');return;}
-    await registerPushToken(true);
-    sendTestNotification();
-  }
+  if(p==='granted'){localStorage.hydroNotifications='on';sendTestNotification();}
 }
-async function sendTestNotification(){
-  if(!('Notification' in window)||Notification.permission!=='granted'){await enableNotifications();return;}
-  if(currentUser&&getVapidKey()){const token=await registerPushToken(false);if(token){toast2('Web Push attivo ✓');}}
+function sendTestNotification(){
+  if(!('Notification' in window)||Notification.permission!=='granted'){enableNotifications();return;}
   try{new Notification('Hydro 💧',{body:'È il momento di bere un po’ d’acqua.',tag:'hydro-test'});}catch(e){toast2('Apri Hydro dalla schermata Home per le notifiche');}
 }
-
 notificationState();
 
 </script><script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script></body></html>

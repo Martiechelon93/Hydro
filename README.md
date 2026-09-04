@@ -1,8 +1,8 @@
-# Hydro 8.3.1
+# Hydro 8.3.2
 
 PWA statica per il monitoraggio dell'idratazione.
 
-## Novità 8.3.1
+## Novità 8.3.2
 - Account multipli con Firebase Authentication (email + password).
 - Recupero password tramite Firebase.
 - Sincronizzazione dei dati personali con Cloud Firestore.
@@ -11,7 +11,7 @@ PWA statica per il monitoraggio dell'idratazione.
 - Foto profilo: resta locale senza account; con account viene inclusa nella sincronizzazione.
 - Backup Excel (.xlsx).
 - Interfaccia azzurra stile iOS, goccia animata e PWA.
-- Versione mostrata nelle Impostazioni: **8.3.1**.
+- Versione mostrata nelle Impostazioni: **8.3.2**.
 
 ## Configurazione Firebase
 
@@ -62,7 +62,7 @@ service cloud.firestore {
 Il progetto può continuare a essere pubblicato su GitHub Pages. Firebase Authentication e Firestore funzionano con la PWA servita in HTTPS.
 
 ## Notifiche Web Push / Apple Watch
-La versione 8.3.1 prepara Hydro per **Firebase Cloud Messaging (FCM)**, così i promemoria possono essere inviati anche quando la PWA non è aperta. Il flusso è: Hydro → token Web Push → Firestore → Cloud Function programmata → FCM → iPhone → eventuale mirroring su Apple Watch. FCM richiede una coppia di chiavi VAPID per il client web.
+La versione 8.3.2 prepara Hydro per **Firebase Cloud Messaging (FCM)**, così i promemoria possono essere inviati anche quando la PWA non è aperta. Il flusso è: Hydro → token Web Push → Firestore → Cloud Function programmata → FCM → iPhone → eventuale mirroring su Apple Watch. FCM richiede una coppia di chiavi VAPID per il client web.
 
 ### 1. Genera la chiave VAPID
 In Firebase Console apri **Project settings → Cloud Messaging → Web Push certificates → Generate key pair**. Copia la **chiave pubblica**. È sufficiente inserirla in Hydro nelle Impostazioni → Web Push; non è una chiave segreta.
@@ -109,7 +109,7 @@ La Web API key presente nella configurazione client è una Firebase API key pub
 - Verifica della connessione Firebase dall'app.
 - Inserimento manuale mantenuto come unico metodo per quantità personalizzate.
 
-## Struttura aggiunta in 8.3.1
+## Struttura aggiunta in 8.3.2
 - `firebase-messaging-sw.js`: service worker FCM per notifiche in background.
 - `functions/index.js`: invio programmato dei promemoria.
 - `functions/package.json`: dipendenze backend.
