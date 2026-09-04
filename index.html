@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="1024x1024" href="icon-1024.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Hydro · v8.0.1</title>
+<title>Hydro · v8.1.0</title>
 <style>
 :root{--bg:#EAF8FE;--bg2:#F7FCFF;--card:#FFFFFF;--text:#103A63;--muted:#6D8BA6;--blue:#22A9E8;--blue2:#E0F5FD;--blue3:#BFEAFF;--line:#D9EEF7;--green:#16A36B;--shadow:0 8px 26px rgba(32,130,180,.10)}
 *{box-sizing:border-box}html{background:linear-gradient(180deg,#DDF5FE 0%,#F8FCFF 55%,#EAF8FE 100%)}body{margin:0;background:radial-gradient(circle at 50% -10%,#fff 0,#EFFAFF 42%,#E7F7FD 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);min-height:100vh}
@@ -82,7 +82,7 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 </div>
 <div class="card"><div class="title">➕ Bevande personalizzate</div><div class="note">Crea e gestisci le tue bevande con nome, icona, quantità predefinita e calorie personalizzate.</div><button class="primary" onclick="addCustomDrink()">＋ Crea bevanda</button></div>
 
-<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.0.1</div></div>
+<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.1.0</div></div>
 </section>
 </div>
 
@@ -102,7 +102,7 @@ let firebaseApp=null,auth=null,db=null,currentUser=null,cloudSaveTimer=null,clou
 if(FIREBASE_ENABLED){try{firebaseApp=firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();}catch(e){console.error("Firebase init",e)}}
 </script>
 <script>
-const HYDRO_VERSION="8.0.0";
+const HYDRO_VERSION="8.1.0";
 const defaultDrinks=[
 {name:'Acqua',icon:'💧',ml:250,kcal:0},{name:'Caffè',icon:'☕',ml:80,kcal:2},
 {name:'Cappuccino',icon:'🥛',ml:150,kcal:90},{name:'Coca-Cola',icon:'🥤',ml:330,kcal:139},{name:'Birra',icon:'🍺',ml:330,kcal:140},{name:'Tè',icon:'🍵',ml:250,kcal:2}
@@ -155,7 +155,7 @@ if(type==='profile')c=`<div class="handle2"></div><h2>Modifica dati</h2><div cla
 if(type==='goal')c=`<div class="handle2"></div><h2>Modifica obiettivo</h2><div style="text-align:center;font-size:34px;font-weight:800;color:var(--blue);margin:18px"><span id="go">${goal}</span> ml</div><input id="gr" type="range" min="500" max="5000" step="50" value="${goal}" style="width:100%;accent-color:var(--blue)" oninput="go.textContent=Number(this.value).toLocaleString('it-IT')"><button class="primary" style="margin-top:18px" onclick="goal=+gr.value;save();closeSheet();updateExtended();toast2('Obiettivo aggiornato ✓')">Salva obiettivo</button>`;
 if(type==='activity')c=`<div class="handle2"></div><h2>Livello di attività</h2>${['Sedentario','Poco attivo','Moderatamente attivo','Molto attivo','Estremamente attivo'].map(x=>`<button class="chip2" style="display:block;width:100%;text-align:left;margin:8px 0" onclick="hydroPrefs.activity='${x}';savePrefs();closeSheet();updateExtended()">${x}${x===hydroPrefs.activity?' ✓':''}</button>`).join('')}`;
 if(type==='accountInfo')c=`<div class="handle2"></div><h2>👤 Account Hydro</h2><p class="note">Per attivare gli account devi prima creare una Web App nel progetto Firebase e inserire la configurazione nell'app. I dati possono poi essere sincronizzati tra i tuoi dispositivi tramite Cloud Firestore.</p><button class="primary" onclick="closeSheet();alert('Apri Firebase Console → crea un progetto → aggiungi una Web App → abilita Authentication con Email/Password e Cloud Firestore. Poi inserisci la configurazione Firebase nel file index.html.')">Come configurare</button>`;
-if(type==='account')c=`<div class="handle2"></div><h2>👤 Accedi a Hydro</h2><p class="note">Usa email e password. I tuoi dati locali verranno associati all'account al primo accesso.</p><div class="field2"><label>EMAIL</label><input id="ae" type="email" autocomplete="email" placeholder="nome@email.it"></div><div class="field2"><label>PASSWORD</label><input id="ap" type="password" autocomplete="current-password" placeholder="••••••••"></div><div class="field2"><label>CONFERMA PASSWORD (SOLO REGISTRAZIONE)</label><input id="ap2" type="password" autocomplete="new-password" placeholder="••••••••"></div><button class="primary" onclick="loginAccount()">Accedi</button><button class="primary" style="background:#fff;color:#168FC8;border:1px solid #CDEAF6" onclick="registerAccount()">Crea account</button><button class="chip2" style="width:100%;margin-top:8px" onclick="resetAccountPassword()">Password dimenticata?</button>`;
+if(type==='account')c=`<div class="handle2"></div><h2>👤 Accedi a Hydro</h2><p class="note">Usa email e password. I tuoi dati locali verranno associati all'account al primo accesso.</p><div class="field2"><label>EMAIL</label><input id="ae" type="email" autocomplete="email" placeholder="nome@email.it"></div><div class="field2"><label>PASSWORD</label><input id="ap" type="password" autocomplete="current-password" placeholder="••••••••"></div><div class="field2"><label>CONFERMA PASSWORD (SOLO REGISTRAZIONE)</label><input id="ap2" type="password" autocomplete="new-password" placeholder="••••••••"></div><button class="primary" onclick="loginAccount()">Accedi</button><button class="primary" style="background:#fff;color:#168FC8;border:1px solid #CDEAF6" onclick="registerAccount()">Crea account</button><button class="chip2" style="width:100%;margin-top:8px" onclick="resetAccountPassword()">Password dimenticata?</button><button class="chip2" style="width:100%;margin-top:8px" onclick="testFirebaseConnection()">Verifica connessione Firebase</button>`;
 if(type==='accountUser')c=`<div class="handle2"></div><h2>👤 Il mio account</h2><p class="note">Account: <b>${currentUser?.email||''}</b></p><div class="row"><span><b>Sincronizzazione</b><br><span class="small">Dati Hydro salvati su Cloud Firestore</span></span><span class="badge2">ATTIVA</span></div><button class="primary" onclick="closeSheet();toast2('Sincronizzazione attiva ✓')">Chiudi</button><button class="primary" style="background:#fff0f0;color:#d45555" onclick="logoutAccount()">Esci dall'account</button>`;
 if(type==='drinkEdit'){let d=drinks[args[0]];c=`<div class="handle2"></div><h2>Modifica bevanda</h2><div class="field2"><label>NOME</label><input id="den" value="${String(d.name||'').replace(/"/g,'&quot;')}"></div><div class="field2"><label>ICONA</label><input id="dei" value="${d.icon||'🥤'}"></div><div class="field2"><label>QUANTITÀ (ML)</label><input id="dem" type="number" min="1" step="10" value="${d.ml}"></div><div class="field2"><label>CALORIE</label><input id="dek" type="number" min="0" value="${d.kcal||0}"></div><button class="primary" onclick="saveDrinkEdit(${args[0]})">Salva modifiche</button>`;}
 if(type==='health')c=`<div class="handle2"></div><h2>Apple Salute ❤️</h2><p class="note" style="margin:14px 0">Nel prototipo il collegamento è preparato ma non attivo. Nella versione iOS useremo HealthKit per leggere/scrivere i dati autorizzati.</p><button class="primary" onclick="closeSheet();toast2('Pronto per HealthKit')">Ho capito</button>`;b.innerHTML=c;document.getElementById('sheet').classList.add('show')}
@@ -187,15 +187,78 @@ function openAccountSheet(){
   openSheet('account');
 }
 function accountMessage(msg){toast2(msg)}
+function firebaseError(e){
+  const code=e&&e.code||'';
+  const map={
+    'auth/email-already-in-use':'Questa email è già registrata. Prova ad accedere.',
+    'auth/invalid-email':'L\'indirizzo email non è valido.',
+    'auth/weak-password':'Password troppo debole. Usa almeno 6 caratteri.',
+    'auth/missing-password':'Inserisci una password.',
+    'auth/invalid-credential':'Email o password non corrette.',
+    'auth/user-not-found':'Account non trovato.',
+    'auth/wrong-password':'Password non corretta.',
+    'auth/too-many-requests':'Troppi tentativi. Riprova più tardi.',
+    'auth/network-request-failed':'Problema di connessione. Controlla internet e riprova.',
+    'auth/operation-not-allowed':'La registrazione Email/Password non è abilitata in Firebase.',
+    'auth/unauthorized-domain':'Questo dominio non è autorizzato in Firebase Authentication.',
+    'auth/invalid-api-key':'La configurazione Firebase non è valida (API key).',
+    'auth/api-key-not-valid.-please-pass-a-valid-api-key.':'La configurazione Firebase non è valida (API key).',
+    'auth/quota-exceeded':'È stato raggiunto un limite temporaneo di Firebase. Riprova più tardi.'
+  };
+  return map[code]||('Errore Firebase'+(code?': '+code:''));
+}
+function defaultHydroPrefs(){return {age:28,weight:60,height:168,activity:'Moderatamente attivo',goalMode:'auto',remOn:true,smart:true,drinkSmart:true,interval:60}}
+function resetLocalForNewAccount(){
+  goal=2000;
+  data={};
+  data[todayKey]=[];
+  drinks=JSON.parse(JSON.stringify(defaultDrinks));
+  hydroPrefs=defaultHydroPrefs();
+  saveLocalOnly();
+  updateExtended();
+}
+function saveLocalOnly(){
+  localStorage.goal=goal;
+  localStorage.hydroData=JSON.stringify(data);
+  localStorage.hydroDrinks=JSON.stringify(drinks);
+  localStorage.hydroPrefs=JSON.stringify(hydroPrefs);
+}
 async function registerAccount(){
-  const email=document.getElementById('ae')?.value.trim().toLowerCase(),p=document.getElementById('ap')?.value||'',p2=document.getElementById('ap2')?.value||'';
-  if(!email||p.length<6||p!==p2){accountMessage('Controlla email e password (minimo 6 caratteri)');return}
-  try{const cred=await auth.createUserWithEmailAndPassword(email,p);currentUser=cred.user;await saveCloud(true);closeSheet();updateAccountUI();accountMessage('Account creato ✓')}catch(e){accountMessage(firebaseError(e))}
+  const email=document.getElementById('ae')?.value.trim().toLowerCase();
+  const p=document.getElementById('ap')?.value||'';
+  const p2=document.getElementById('ap2')?.value||'';
+  if(!firebaseConfigured()){accountMessage('Firebase non è configurato.');return}
+  if(!email){accountMessage('Inserisci un indirizzo email.');return}
+  if(p.length<6){accountMessage('La password deve avere almeno 6 caratteri.');return}
+  if(p!==p2){accountMessage('Le due password non coincidono.');return}
+  try{
+    const cred=await auth.createUserWithEmailAndPassword(email,p);
+    currentUser=cred.user;
+    closeSheet();
+    updateAccountUI();
+    accountMessage('Account creato ✓');
+    // onAuthStateChanged gestisce il caricamento/salvataggio dei dati cloud.
+  }catch(e){
+    console.error('Firebase registration',e);
+    accountMessage(firebaseError(e));
+  }
 }
 async function loginAccount(){
-  const email=document.getElementById('ae')?.value.trim().toLowerCase(),p=document.getElementById('ap')?.value||'';
-  if(!email||!p){accountMessage('Inserisci email e password');return}
-  try{const cred=await auth.signInWithEmailAndPassword(email,p);currentUser=cred.user;await loadCloudData();closeSheet();updateExtended();updateAccountUI();accountMessage('Accesso effettuato ✓')}catch(e){accountMessage(firebaseError(e))}
+  const email=document.getElementById('ae')?.value.trim().toLowerCase();
+  const p=document.getElementById('ap')?.value||'';
+  if(!firebaseConfigured()){accountMessage('Firebase non è configurato.');return}
+  if(!email||!p){accountMessage('Inserisci email e password.');return}
+  try{
+    const cred=await auth.signInWithEmailAndPassword(email,p);
+    currentUser=cred.user;
+    closeSheet();
+    updateAccountUI();
+    accountMessage('Accesso effettuato ✓');
+    // onAuthStateChanged gestisce il caricamento dei dati cloud.
+  }catch(e){
+    console.error('Firebase login',e);
+    accountMessage(firebaseError(e));
+  }
 }
 async function resetAccountPassword(){
   const email=document.getElementById('ae')?.value.trim().toLowerCase()||prompt('Inserisci la tua email');
@@ -203,27 +266,90 @@ async function resetAccountPassword(){
   try{await auth.sendPasswordResetEmail(email);accountMessage('Email per reimpostare la password inviata ✓')}catch(e){accountMessage(firebaseError(e))}
 }
 async function logoutAccount(){
-  try{await auth.signOut();currentUser=null;cloudReady=false;closeSheet();updateAccountUI();accountMessage('Disconnesso ✓')}catch(e){accountMessage(firebaseError(e))}
+  try{await auth.signOut();currentUser=null;cloudReady=false;clearTimeout(cloudSaveTimer);closeSheet();updateAccountUI();accountMessage('Disconnesso ✓')}catch(e){accountMessage(firebaseError(e))}
 }
-function firebaseError(e){const code=e&&e.code||'';const map={'auth/email-already-in-use':'Email già registrata.','auth/invalid-email':'Email non valida.','auth/weak-password':'Password troppo debole.','auth/invalid-credential':'Email o password non corrette.','auth/user-not-found':'Account non trovato.','auth/wrong-password':'Password non corretta.','auth/too-many-requests':'Troppi tentativi. Riprova più tardi.','auth/network-request-failed':'Problema di connessione.'};return map[code]||'Operazione non riuscita.'}
 function localPayload(){return {goal,data,drinks,hydroPrefs,version:HYDRO_VERSION,updatedAt:new Date().toISOString()}}
 function cloudPayload(){return {goal,data,drinks,hydroPrefs,version:HYDRO_VERSION,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}}
 async function loadCloudData(){
-  if(!firebaseConfigured()||!currentUser)return;
+  if(!firebaseConfigured()||!currentUser)return false;
   try{
-    const ref=db.collection('users').doc(currentUser.uid),snap=await ref.get();
-    if(snap.exists){const p=snap.data().payload||{};if(typeof p.goal==='number')goal=p.goal;if(p.data&&typeof p.data==='object')data=p.data;if(Array.isArray(p.drinks))drinks=p.drinks;if(p.hydroPrefs&&typeof p.hydroPrefs==='object')hydroPrefs={...hydroPrefs,...p.hydroPrefs};localStorage.goal=goal;localStorage.hydroData=JSON.stringify(data);localStorage.hydroDrinks=JSON.stringify(drinks);localStorage.hydroPrefs=JSON.stringify(hydroPrefs);cloudReady=true;}
-    else {await saveCloud(true);cloudReady=true;}
-  }catch(e){console.error('Cloud load',e);accountMessage('Account collegato, ma sincronizzazione non disponibile')}
+    const uid=currentUser.uid;
+    const ref=db.collection('users').doc(uid);
+    const snap=await ref.get();
+    const owner=localStorage.getItem('hydroOwnerUid');
+    if(snap.exists){
+      const p=snap.data().payload||{};
+      if(typeof p.goal==='number')goal=p.goal;
+      if(p.data&&typeof p.data==='object')data=p.data;
+      if(Array.isArray(p.drinks))drinks=p.drinks;
+      if(p.hydroPrefs&&typeof p.hydroPrefs==='object')hydroPrefs={...hydroPrefs,...p.hydroPrefs};
+      saveLocalOnly();
+      localStorage.setItem('hydroOwnerUid',uid);
+      cloudReady=true;
+      return true;
+    }
+    // Primo account: associa i dati locali esistenti. Account diverso senza dati cloud: parti pulito.
+    if(owner&&owner!==uid){
+      resetLocalForNewAccount();
+    }
+    localStorage.setItem('hydroOwnerUid',uid);
+    const saved=await saveCloud(true);
+    cloudReady=saved;
+    return saved;
+  }catch(e){
+    console.error('Cloud load',e);
+    cloudReady=false;
+    accountMessage('Account collegato, ma sincronizzazione cloud non disponibile.');
+    return false;
+  }
 }
 async function saveCloud(force=false){
-  if(!firebaseConfigured()||!currentUser||(!cloudReady&&!force))return;
-  try{await db.collection('users').doc(currentUser.uid).set({payload:cloudPayload(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})}catch(e){console.error('Cloud save',e)}
+  if(!firebaseConfigured()||!currentUser||(!cloudReady&&!force))return false;
+  try{
+    await db.collection('users').doc(currentUser.uid).set(
+      {payload:cloudPayload(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},
+      {merge:true}
+    );
+    return true;
+  }catch(e){
+    console.error('Cloud save',e);
+    return false;
+  }
 }
-function scheduleCloudSave(){if(!firebaseConfigured()||!currentUser)return;clearTimeout(cloudSaveTimer);cloudSaveTimer=setTimeout(()=>saveCloud(),700)}
+function scheduleCloudSave(){
+  if(!firebaseConfigured()||!currentUser||!cloudReady)return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(async()=>{
+    const ok=await saveCloud();
+    if(!ok)accountMessage('Dati salvati sul dispositivo, ma non sincronizzati sul cloud.');
+  },700);
+}
 function firebaseSaveHook(){if(!firebaseConfigured()||!currentUser||!cloudReady)return;scheduleCloudSave()}
+async function testFirebaseConnection(){
+  if(!firebaseConfigured()){accountMessage('Firebase non è configurato.');return}
+  try{
+    const app=firebase.app();
+    if(app.options.projectId!==FIREBASE_CONFIG.projectId)throw new Error('project-id');
+    await auth.currentUser?.getIdToken(true);
+    accountMessage('Firebase collegato ✓');
+  }catch(e){
+    console.error('Firebase test',e);
+    accountMessage(firebaseError(e));
+  }
+}
 if(firebaseConfigured()){
-  auth.onAuthStateChanged(async user=>{currentUser=user||null;cloudReady=false;updateAccountUI();if(user){await loadCloudData();update();updateExtended();}});
+  auth.onAuthStateChanged(async user=>{
+    currentUser=user||null;
+    cloudReady=false;
+    updateAccountUI();
+    if(user){
+      const ok=await loadCloudData();
+      update();
+      updateExtended();
+      updateAccountUI();
+      if(ok)accountMessage('Dati sincronizzati ✓');
+    }
+  });
 }
 const _save=save;
 save=function(){_save();firebaseSaveHook()};
