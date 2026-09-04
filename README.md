@@ -1,11 +1,65 @@
-# Hydro
+# Hydro 8.0.0
 
-Hydro è un prototipo web/PWA per il monitoraggio dell'idratazione.
+PWA statica per il monitoraggio dell'idratazione.
+
+## Novità 8.0.0
+- Account multipli con Firebase Authentication (email + password).
+- Recupero password tramite Firebase.
+- Sincronizzazione dei dati personali con Cloud Firestore.
+- Pulsante **Modifica** per correggere le registrazioni di consumo (quantità, bevanda, calorie e orario).
+- Possibilità di modificare anche le bevande personalizzate.
+- Foto profilo: resta locale senza account; con account viene inclusa nella sincronizzazione.
+- Backup Excel (.xlsx).
+- Interfaccia azzurra stile iOS, goccia animata e PWA.
+- Versione mostrata nelle Impostazioni: **8.0.0**.
+
+## Configurazione Firebase
+
+La Web App Firebase è già configurata nel file `index.html`. Prima della pubblicazione assicurati che siano attivi:
+
+1. **Authentication → Sign-in method → Email/Password**.
+2. **Cloud Firestore Database**.
+
+Esempio di struttura (usa i valori forniti dal tuo progetto Firebase):
+
+```js
+const FIREBASE_CONFIG={
+  apiKey:"...",
+  authDomain:"...",
+  projectId:"...",
+  storageBucket:"...",
+  messagingSenderId:"...",
+  appId:"..."
+};
+```
+
+La configurazione Web Firebase destinata al client non contiene una password amministrativa. **Non inserire mai chiavi private/service-account nel file HTML.** La sicurezza dei dati è affidata alle Security Rules di Firestore.
+
+## Firestore
+
+Hydro usa un documento per utente nella collection `users`, con ID uguale al Firebase UID. Il documento contiene il payload di Hydro (`goal`, `data`, `drinks`, `hydroPrefs`).
+
+Attiva le regole di sicurezza e consenti a ogni utente autenticato di leggere/scrivere esclusivamente il proprio documento:
+
+```txt
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+## Comportamento della sincronizzazione
+- Senza account: Hydro continua a funzionare interamente in locale.
+- Primo accesso a un account senza dati cloud: i dati locali vengono associati all'account.
+- Account già usato: vengono caricati i dati presenti su Firestore.
+- Le modifiche successive vengono sincronizzate automaticamente con un breve ritardo.
 
 ## GitHub Pages
-1. Carica questi file nella root del repository.
-2. Vai in **Settings → Pages**.
-3. Seleziona **Deploy from a branch**, branch `main`, cartella `/(root)`.
-4. Salva e attendi la pubblicazione.
+Il progetto può continuare a essere pubblicato su GitHub Pages. Firebase Authentication e Firestore funzionano con la PWA servita in HTTPS.
 
-L'app è un prototipo: le notifiche browser di prova non equivalgono ancora a un sistema di promemoria in background affidabile quando l'app è chiusa.
+## Notifiche
+La versione mantiene la gestione delle autorizzazioni/notifica di prova già presente. Le notifiche push in background personalizzate (ad esempio promemoria individuali anche con app chiusa) richiedono una configurazione aggiuntiva di Firebase Cloud Messaging e un componente server/Cloud Functions per l'invio.
