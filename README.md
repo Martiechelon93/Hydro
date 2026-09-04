@@ -1,8 +1,8 @@
-# Hydro 8.1.2
+# Hydro 8.2.1
 
 PWA statica per il monitoraggio dell'idratazione.
 
-## Novità 8.1.2
+## Novità 8.2.1
 - Account multipli con Firebase Authentication (email + password).
 - Recupero password tramite Firebase.
 - Sincronizzazione dei dati personali con Cloud Firestore.
@@ -11,7 +11,7 @@ PWA statica per il monitoraggio dell'idratazione.
 - Foto profilo: resta locale senza account; con account viene inclusa nella sincronizzazione.
 - Backup Excel (.xlsx).
 - Interfaccia azzurra stile iOS, goccia animata e PWA.
-- Versione mostrata nelle Impostazioni: **8.1.2**.
+- Versione mostrata nelle Impostazioni: **8.2.1**.
 
 ## Configurazione Firebase
 
@@ -62,14 +62,17 @@ service cloud.firestore {
 Il progetto può continuare a essere pubblicato su GitHub Pages. Firebase Authentication e Firestore funzionano con la PWA servita in HTTPS.
 
 ## Notifiche
-La versione mantiene la gestione delle autorizzazioni/notifica di prova già presente. Le notifiche push in background personalizzate (ad esempio promemoria individuali anche con app chiusa) richiedono una configurazione aggiuntiva di Firebase Cloud Messaging e un componente server/Cloud Functions per l'invio.
+- Hydro richiede il permesso alle notifiche sul dispositivo.
+- Su iPhone, installando Hydro nella schermata Home, le notifiche web possono essere ricevute dal dispositivo.
+- Se l'iPhone riceve la notifica e Apple Watch è configurato per il mirroring delle notifiche, la notifica può essere mostrata anche sull'Apple Watch.
+- I promemoria ricorrenti in background personalizzati richiedono una configurazione aggiuntiva di Firebase Cloud Messaging e un componente server/Cloud Functions per l'invio.
 
 
 ## Nota sicurezza Firebase
 La Web API key presente nella configurazione client è una Firebase API key pubblica. Firebase documenta che queste chiavi identificano il progetto/app e non autorizzano l'accesso ai dati; l'autorizzazione è gestita da Firebase Authentication e Firestore Security Rules. Non inserire mai nel repository chiavi private di Service Account, client secret o credenziali server.
 
 
-## Novità 8.1.2
+## Novità 8.2.1
 - Registrazione e accesso Firebase con gestione dettagliata degli errori.
 - Sincronizzazione cloud separata dalla creazione dell'account.
 - Protezione dal trasferimento accidentale dei dati locali tra account diversi.
