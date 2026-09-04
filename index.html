@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 <link rel="icon" type="image/png" sizes="1024x1024" href="icon-1024.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Hydro · v8.0.0</title>
+<title>Hydro · v8.0.1</title>
 <style>
 :root{--bg:#EAF8FE;--bg2:#F7FCFF;--card:#FFFFFF;--text:#103A63;--muted:#6D8BA6;--blue:#22A9E8;--blue2:#E0F5FD;--blue3:#BFEAFF;--line:#D9EEF7;--green:#16A36B;--shadow:0 8px 26px rgba(32,130,180,.10)}
 *{box-sizing:border-box}html{background:linear-gradient(180deg,#DDF5FE 0%,#F8FCFF 55%,#EAF8FE 100%)}body{margin:0;background:radial-gradient(circle at 50% -10%,#fff 0,#EFFAFF 42%,#E7F7FD 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);min-height:100vh}
@@ -82,7 +82,7 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 </div>
 <div class="card"><div class="title">➕ Bevande personalizzate</div><div class="note">Crea e gestisci le tue bevande con nome, icona, quantità predefinita e calorie personalizzate.</div><button class="primary" onclick="addCustomDrink()">＋ Crea bevanda</button></div>
 
-<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.0.0</div></div>
+<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.0.1</div></div>
 </section>
 </div>
 
@@ -94,6 +94,8 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 <script src="https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore-compat.js"></script>
 <script>
 // Configurazione Firebase: inserisci qui i valori della tua Web App Firebase.
+// La Firebase Web API key è pubblica per progettazione: la sicurezza dei dati è affidata a Firebase Auth + Firestore Security Rules.
+// Non inserire qui service-account private key, client secret o altre credenziali server.
 const FIREBASE_CONFIG={apiKey:"AIzaSyAzoriZ9E6_aGI1DKVs7WfkHQwMwhTwVgv",authDomain:"hydro-f2428.firebaseapp.com",projectId:"hydro-f2428",storageBucket:"hydro-f2428.firebasestorage.app",messagingSenderId:"311768311646",appId:"1:311768311646:web:4a255236e2dca3128411cf"};
 const FIREBASE_ENABLED=!!(FIREBASE_CONFIG.apiKey&&FIREBASE_CONFIG.authDomain&&FIREBASE_CONFIG.projectId&&FIREBASE_CONFIG.appId);
 let firebaseApp=null,auth=null,db=null,currentUser=null,cloudSaveTimer=null,cloudReady=false;
