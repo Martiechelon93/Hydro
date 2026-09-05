@@ -13,6 +13,7 @@
 *{box-sizing:border-box}html{background:linear-gradient(180deg,#DDF5FE 0%,#F8FCFF 55%,#EAF8FE 100%)}body{margin:0;background:radial-gradient(circle at 50% -10%,#fff 0,#EFFAFF 42%,#E7F7FD 100%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);min-height:100vh}
 .app{background:transparent}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.brand{font-size:30px;font-weight:800;letter-spacing:-.6px}.date{color:var(--muted);font-size:14px;margin-top:3px}.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#D8F3FC,#fff);display:grid;place-items:center;font-size:21px;border:2px solid #fff;box-shadow:0 4px 14px rgba(24,132,182,.12)}
 .page{display:none}.page.active{display:block}.card{background:rgba(255,255,255,.94);border:1px solid rgba(189,228,243,.72);border-radius:24px;padding:18px;margin:12px 0;box-shadow:var(--shadow)}
+.glass-hero{height:245px;display:flex;align-items:center;justify-content:center;position:relative;margin:0 auto 2px}.glass-drop-illustration{width:330px;height:235px;filter:drop-shadow(0 12px 18px rgba(24,161,224,.14))}.hero-drop-art{animation:heroDropFloat 3.8s ease-in-out infinite}.drop-inside-static{position:absolute;left:50%;top:10px;transform:translateX(-50%);width:180px;text-align:center;color:var(--text);pointer-events:none}.drop-inside-static .amount{font-size:30px;font-weight:850;white-space:nowrap;color:#0B416B}.drop-inside-static .small{color:var(--muted)}.drop-inside-static .drop-percent{color:#168FC8;margin-top:4px}@keyframes heroDropFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .drop-wrap{width:240px;height:286px;margin:0 auto 6px;position:relative;display:grid;place-items:center;animation:dropFloat 3.8s ease-in-out infinite;transform-origin:50% 85%}.drop-svg{width:220px;height:270px;filter:drop-shadow(0 12px 20px rgba(34,169,223,.22))}.water-fill{transition:y .75s cubic-bezier(.2,.8,.2,1),height .75s cubic-bezier(.2,.8,.2,1)}.water-wave{animation:waveMove 2.8s ease-in-out infinite alternate;transform-origin:center}.drop-inside{position:absolute;left:50%;top:58%;transform:translate(-50%,-50%);width:190px;text-align:center;color:#fff;text-shadow:0 1px 4px rgba(0,90,140,.5);pointer-events:none}.drop-inside .amount{font-size:31px;font-weight:850;white-space:nowrap}.drop-inside .small{color:#fff;opacity:.95}.drop-percent{font-size:16px;font-weight:800;margin-top:5px}.small{font-size:14px;color:var(--muted)}@keyframes dropFloat{0%,100%{transform:rotate(-1.2deg) translateY(0)}50%{transform:rotate(1.2deg) translateY(-4px)}}@keyframes waveMove{0%{transform:translateX(-7px)}100%{transform:translateX(7px)}}.remaining{text-align:center;color:var(--muted);margin-bottom:17px}.success{color:var(--green);font-weight:750}
 .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.quick button,.primary,.chip,.drink{border:0;border-radius:15px;padding:13px 7px;font-weight:750;background:var(--blue2);color:#148DCA;font-size:14px;transition:transform .15s ease,box-shadow .15s ease}.quick button:active,.primary:active,.chip:active,.drink:active{transform:scale(.98)}.primary{width:100%;background:linear-gradient(135deg,#35B9EE,#179BE0);color:#fff;margin-top:9px;box-shadow:0 6px 15px rgba(25,157,224,.20)}
 .title{font-size:18px;font-weight:800;margin-bottom:14px;letter-spacing:-.2px}.tabs{display:flex;background:#E5F5FB;border-radius:12px;padding:3px;margin-bottom:15px}.tabs button{flex:1;border:0;background:transparent;border-radius:10px;padding:9px;color:var(--muted);font-weight:700}.tabs button.on{background:#fff;color:var(--text);box-shadow:0 2px 8px rgba(20,110,160,.10)}
@@ -64,7 +65,7 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 
 <section id="home" class="page active">
 <div class="home-intro"><div><div class="eyebrow">OGGI</div><h1>Come stai andando?</h1></div><span class="live-dot">●</span></div>
-<div class="card hero-card"><div class="drop-wrap" id="dropWrap" style="--level:0"><svg class="drop-svg" viewBox="0 0 220 250" aria-hidden="true"><defs><linearGradient id="dropGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".92"/><stop offset=".45" stop-color="#DDF8FD" stop-opacity=".5"/><stop offset="1" stop-color="#8DE4F6" stop-opacity=".2"/></linearGradient><linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#61D4F1"/><stop offset="1" stop-color="#22A9DF"/></linearGradient><clipPath id="dropClip"><path d="M110 18C99 35 46 77 40 126C33 178 63 222 110 230C157 222 187 178 180 126C174 77 121 35 110 18Z"/></clipPath></defs><path d="M110 18C99 35 46 77 40 126C33 178 63 222 110 230C157 222 187 178 180 126C174 77 121 35 110 18Z" fill="url(#dropGlass)" stroke="#7BDDF3" stroke-width="4"/><g clip-path="url(#dropClip)"><rect class="water-fill" id="waterFill" x="0" y="250" width="220" height="250" fill="url(#waterGrad)"/><path class="water-wave" id="waterWave" d="M0 145 C35 130 65 161 110 143 C155 125 185 160 220 140 L220 250 L0 250 Z" fill="#8CE7F6" fill-opacity=".38"/><circle cx="73" cy="181" r="4" fill="#fff" opacity=".55"/><circle cx="146" cy="202" r="3" fill="#fff" opacity=".4"/><circle cx="126" cy="171" r="2.5" fill="#fff" opacity=".5"/></g><path d="M91 57c-14 20-27 37-32 53" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" opacity=".75"/></svg><div class="drop-inside"><div class="amount" id="amount">0 ml</div><div class="small">di <span id="goal">2000</span> ml</div><div class="drop-percent" id="dropPercent">0%</div></div></div><div class="remaining" id="remaining"></div>
+<div class="card hero-card"><div class="glass-hero" aria-label="Bicchiere d'acqua con goccia"><svg class="glass-drop-illustration" viewBox="0 0 340 250" aria-hidden="true"><defs><linearGradient id="glassWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#79DDF5"/><stop offset="1" stop-color="#22A9DF"/></linearGradient><linearGradient id="glassBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".9"/><stop offset="1" stop-color="#D8F5FC" stop-opacity=".28"/></linearGradient><linearGradient id="heroDrop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8BE5F8"/><stop offset="1" stop-color="#22A9DF"/></linearGradient><clipPath id="glassClip"><path d="M70 42h128l-11 155c-2 20-18 32-53 32s-51-12-53-32L70 42Z"/></clipPath></defs><ellipse cx="137" cy="226" rx="100" ry="12" fill="#8ACFE8" opacity=".18"/><g class="glass-art"><path d="M70 42h128l-11 155c-2 20-18 32-53 32s-51-12-53-32L70 42Z" fill="url(#glassBody)" stroke="#7BDDF3" stroke-width="3"/><g clip-path="url(#glassClip)"><rect id="glassWaterFill" x="55" y="110" width="160" height="140" fill="url(#glassWater)" opacity=".9"/><path d="M55 116c26-13 43 10 70 0s44-11 70 0v140H55Z" fill="#B7F0FB" opacity=".35"/></g><path d="M70 42h128" stroke="#A9EAF7" stroke-width="5" stroke-linecap="round"/><path d="M84 57l9 119" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".65"/></g><g class="hero-drop-art"><path d="M259 83c-25 29-43 48-43 71a43 43 0 0 0 86 0c0-23-18-42-43-71Z" fill="url(#heroDrop)" stroke="#5BC9EC" stroke-width="2"/><path d="M241 116c-8 10-12 18-12 27" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" opacity=".72"/><circle cx="249" cy="157" r="4" fill="#073C68"/><circle cx="276" cy="157" r="4" fill="#073C68"/><path d="M254 171c6 6 12 6 18 0" fill="none" stroke="#073C68" stroke-width="3" stroke-linecap="round"/></g></svg></div><div class="drop-inside-static"><div class="amount" id="amount">0 ml</div><div class="small">di <span id="goal">2000</span> ml</div><div class="drop-percent" id="dropPercent">0%</div></div><div class="remaining" id="remaining"></div>
 <div class="quick"><button onclick="addWater(150)">+150 ml</button><button onclick="addWater(250)">+250 ml</button><button onclick="addWater(500)">+500 ml</button></div><button class="chip2" style="width:100%;margin-top:8px;padding:11px" onclick="openSheet('manual')">✎ Inserimento manuale</button></div>
 <div class="card"><div class="title">🥤 Aggiungi bevanda</div><div class="drinks" id="drinks"></div></div>
 </section>
@@ -139,7 +140,7 @@ let firebaseApp=null,auth=null,db=null,currentUser=null,cloudSaveTimer=null,clou
 if(FIREBASE_ENABLED){try{firebaseApp=firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e=>console.warn("Auth persistence",e));db.enablePersistence({synchronizeTabs:true}).then(()=>console.log("Firestore offline persistence enabled")).catch(e=>console.warn("Firestore offline persistence",e));}catch(e){firebaseInitError=e;console.error("Firebase init",e)}}
 </script>
 <script>
-const HYDRO_VERSION="8.3.4";
+const HYDRO_VERSION="8.3.5";
 const defaultDrinks=[
 {name:'Acqua',icon:'water',ml:250,kcal:0},{name:'Caffè',icon:'coffee',ml:80,kcal:2},
 {name:'Cappuccino',icon:'cappuccino',ml:350,kcal:90},{name:'Coca-Cola',icon:'soda',ml:330,kcal:139},{name:'Birra',icon:'beer',ml:330,kcal:140},{name:'Tè',icon:'tea',ml:250,kcal:2}
@@ -173,8 +174,9 @@ function drinkIcon(key,cls='drink-svg'){
   return `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${paths[k]||paths.other}</svg>`;
 }
 let goal=+localStorage.goal||2000, data=JSON.parse(localStorage.hydroData||'{}'), drinks=JSON.parse(localStorage.hydroDrinks||'null')||JSON.parse(JSON.stringify(defaultDrinks));
-// Migrazione dei preset: aggiorna le icone grafiche e porta il cappuccino al nuovo valore predefinito di 350 ml.
-drinks=drinks.map(d=>{const key=iconEmojiMap[d.icon]||d.icon; if(['Acqua','Caffè','Cappuccino','Coca-Cola','Birra','Tè'].includes(d.name)){const def=defaultDrinks.find(x=>x.name===d.name);return {...d,icon:def.icon,ml:d.name==='Cappuccino'?350:d.ml};} return {...d,icon:key||'other'};});
+// Migrazione dei preset: icone grafiche + cappuccino sempre a 350 ml.
+function normalizeDrinks(list){return (Array.isArray(list)?list:JSON.parse(JSON.stringify(defaultDrinks))).map(d=>{const key=iconEmojiMap[d.icon]||d.icon; if(['Acqua','Caffè','Cappuccino','Coca-Cola','Birra','Tè'].includes(d.name)){const def=defaultDrinks.find(x=>x.name===d.name);return {...d,icon:def.icon,ml:d.name==='Cappuccino'?350:d.ml};} return {...d,icon:key||'other'};});}
+drinks=normalizeDrinks(drinks);
 const key=d=>d.toISOString().slice(0,10), todayKey=key(new Date());
 if(!data[todayKey])data[todayKey]=[];
 document.getElementById('goalInput').value=goal;
@@ -186,7 +188,7 @@ function addEntry(d){if(!Array.isArray(data[todayKey]))data[todayKey]=[];data[to
 function addWater(ml){addEntry({name:'Acqua',icon:'water',ml,kcal:0})}
 function renderDrinks(){document.getElementById('drinks').innerHTML=drinks.map((d,i)=>`<button class="drink" onclick="drink(${i})"><span class="ico">${drinkIcon(d.icon)}</span><b>${d.name}</b><small>${d.ml} ml · ${d.kcal} kcal</small></button>`).join('')}
 function drink(i){addEntry(drinks[i])}
-function update(){let w=total(),p=Math.min(w/goal,1),level=Math.round(p*100);document.getElementById('amount').textContent=w.toLocaleString('it-IT')+' ml';document.getElementById('goal').textContent=goal.toLocaleString('it-IT');document.getElementById('dropWrap').style.setProperty('--level',level);let fill=document.getElementById('waterFill');let y=252-(213*p);fill.setAttribute('y',y);fill.setAttribute('height',270-y);document.getElementById('dropPercent').textContent=level+'%';document.getElementById('remaining').innerHTML=w>=goal?'<span class="success">🎉 Obiettivo raggiunto!</span>':'Ti mancano '+Math.max(goal-w,0).toLocaleString('it-IT')+' ml';renderDrinks();renderWeek();renderDrinkStats();renderPeriod('day');save()}
+function update(){let w=total(),p=Math.min(w/goal,1),level=Math.round(p*100);document.getElementById('amount').textContent=w.toLocaleString('it-IT')+' ml';document.getElementById('goal').textContent=goal.toLocaleString('it-IT');document.getElementById('dropPercent').textContent=level+'%';document.getElementById('remaining').innerHTML=w>=goal?'<span class="success">🎉 Obiettivo raggiunto!</span>':'Ti mancano '+Math.max(goal-w,0).toLocaleString('it-IT')+' ml';renderDrinks();renderWeek();renderDrinkStats();renderPeriod('day');save()}
 function setGoal(){let n=+document.getElementById('goalInput').value;if(n>=500){goal=n;update()}else document.getElementById('goalInput').value=goal}
 function resetDay(){if(confirm('Azzerare il consumo di oggi?')){data[todayKey]=[];update()}}
 function show(page,nav){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(page).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));const n=document.getElementById(nav);if(n)n.classList.add('on');if(page==='calendarPage')renderPeriod('day');if(page==='settings')notificationState()}
@@ -201,7 +203,7 @@ function openEditEntry(i){let x=data[todayKey][i];openSheet('edit',i)}
 function deleteEntry(i){if(confirm('Eliminare questa registrazione?')){data[todayKey].splice(i,1);save();closeSheet();update();toast2('Registrazione eliminata ✓')}}
 function saveEditedEntry(i){let x=data[todayKey][i],name=document.getElementById('en').value.trim()||x.name,icon=document.getElementById('ei').value.trim()||x.icon||'🥤',ml=Number(document.getElementById('em').value),kcal=Number(document.getElementById('ek').value)||0,time=document.getElementById('et').value||x.time||'';if(!(ml>0)){toast2('Inserisci una quantità valida');return}data[todayKey][i]={...x,name,icon,ml,kcal,time};save();closeSheet();update();toast2('Registrazione aggiornata ✓')}
 function exportXLSX(){if(typeof XLSX==='undefined'){toast2('Esportazione non disponibile offline');return}let rows=[];Object.keys(data).sort().forEach(date=>(data[date]||[]).forEach(x=>rows.push({Data:date,Ora:x.time||'',Bevanda:x.name||'',Icona:x.icon||'',Quantità_ml:Number(x.ml)||0,Kcal:Number(x.kcal)||0,ID:x.id||''})));let settings=[['Obiettivo (ml)',goal],['Età',hydroPrefs.age],['Peso (kg)',hydroPrefs.weight],['Altezza (cm)',hydroPrefs.height],['Attività',hydroPrefs.activity],['Modalità obiettivo',hydroPrefs.goalMode],['Promemoria attivi',hydroPrefs.remOn?'Sì':'No'],['Promemoria smart',hydroPrefs.smart?'Sì':'No'],['Smart basato su consumo',hydroPrefs.drinkSmart?'Sì':'No'],['Intervallo (min)',hydroPrefs.interval],['Esportato il',new Date().toLocaleString('it-IT')]];let drinkRows=drinks.map(d=>({Nome:d.name,Icona:d.icon,Quantità_predefinita_ml:Number(d.ml)||0,Kcal:Number(d.kcal)||0}));let wb=XLSX.utils.book_new();let ws1=XLSX.utils.json_to_sheet(rows.length?rows:[{Data:'',Ora:'',Bevanda:'Nessuna registrazione',Icona:'',Quantità_ml:0,Kcal:0,ID:''}]);let ws2=XLSX.utils.aoa_to_sheet(settings);let ws3=XLSX.utils.json_to_sheet(drinkRows);XLSX.utils.book_append_sheet(wb,ws1,'Assunzioni');XLSX.utils.book_append_sheet(wb,ws2,'Impostazioni');XLSX.utils.book_append_sheet(wb,ws3,'Bevande');let stamp=new Date().toISOString().slice(0,10);XLSX.writeFile(wb,`Hydro-backup-${stamp}.xlsx`);toast2('Backup creato ✓')}
-function addCustomDrink(){let name=prompt('Nome della bevanda?');if(!name)return;let icon=prompt('Icona/emoji?', '🥤')||'🥤';let ml=+prompt('Quantità in ml?', '250')||250;let kcal=+prompt('Kcal?', '0')||0;drinks.push({name,icon,ml,kcal});save();update()}
+function addCustomDrink(){let name=prompt('Nome della bevanda?');if(!name)return;let icon='other';let ml=+prompt('Quantità in ml?', '250')||250;let kcal=+prompt('Kcal?', '0')||0;drinks.push({name,icon,ml,kcal});save();update()}
 update();
 
 let hydroPrefs=JSON.parse(localStorage.hydroPrefs||'null')||{name:'',age:'',weight:'',height:'',sex:'',activity:'',goalMode:'auto',remOn:true,smart:true,drinkSmart:true,interval:60};
@@ -293,7 +295,7 @@ function resetLocalForNewAccount(){
   goal=2000;
   data={};
   data[todayKey]=[];
-  drinks=JSON.parse(JSON.stringify(defaultDrinks));
+  drinks=normalizeDrinks(defaultDrinks);
   hydroPrefs=defaultHydroPrefs();
   saveLocalOnly();
   updateExtended();
@@ -349,11 +351,12 @@ async function resetAccountPassword(){
   try{await auth.sendPasswordResetEmail(email);accountMessage('Email per reimpostare la password inviata ✓')}catch(e){accountMessage(firebaseError(e))}
 }
 async function logoutAccount(){
-  try{await auth.signOut();currentUser=null;cloudReady=false;clearTimeout(cloudSaveTimer);goal=2000;data={[todayKey]:[]};drinks=JSON.parse(JSON.stringify(defaultDrinks));hydroPrefs=defaultHydroPrefs();localStorage.removeItem('hydroOwnerUid');saveLocalOnly();closeSheet();updateAccountUI();showAuthGate();accountMessage('Disconnesso ✓')}catch(e){accountMessage(firebaseError(e))}
+  try{await auth.signOut();currentUser=null;cloudReady=false;clearTimeout(cloudSaveTimer);goal=2000;data={[todayKey]:[]};drinks=normalizeDrinks(defaultDrinks);hydroPrefs=defaultHydroPrefs();localStorage.removeItem('hydroOwnerUid');saveLocalOnly();closeSheet();updateAccountUI();showAuthGate();accountMessage('Disconnesso ✓')}catch(e){accountMessage(firebaseError(e))}
 }
 function localPayload(){return {goal,data,drinks,hydroPrefs,version:HYDRO_VERSION,updatedAt:new Date().toISOString()}}
 function cloudPayload(){return {goal,data,drinks,hydroPrefs:{...hydroPrefs,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'Europe/Rome'},version:HYDRO_VERSION,updatedAt:firebase.firestore.FieldValue.serverTimestamp()}}
 async function loadCloudData(){
+  let cloudDrinksMigrated=false;
   if(!firebaseConfigured()||!currentUser)return false;
   try{
     const uid=currentUser.uid;
@@ -367,7 +370,7 @@ async function loadCloudData(){
       // Dopo il cambio di giorno il documento cloud può non contenere ancora la chiave di oggi.
       // Garantiamo sempre un array valido, così i nuovi intake possono essere registrati.
       if(!Array.isArray(data[todayKey]))data[todayKey]=[];
-      if(Array.isArray(p.drinks))drinks=p.drinks;
+      if(Array.isArray(p.drinks)){const before=JSON.stringify(p.drinks);drinks=normalizeDrinks(p.drinks);if(JSON.stringify(drinks)!==before) cloudDrinksMigrated=true;}
       let keepLocalPrefs=false;
       if(p.hydroPrefs&&typeof p.hydroPrefs==='object'){
         const localPrefs={...hydroPrefs};
@@ -387,7 +390,7 @@ async function loadCloudData(){
       saveLocalOnly();
       localStorage.setItem('hydroOwnerUid',uid);
       cloudReady=true;
-      if(keepLocalPrefs) await saveCloud(true);
+      if(keepLocalPrefs||cloudDrinksMigrated) await saveCloud(true);
       return true;
     }
     // Primo account: associa i dati locali esistenti. Account diverso senza dati cloud: parti pulito.
@@ -453,7 +456,7 @@ if(firebaseConfigured()){
       hideAuthGate();
       notificationState();
     }else{
-      goal=2000;data={[todayKey]:[]};drinks=JSON.parse(JSON.stringify(defaultDrinks));hydroPrefs=defaultHydroPrefs();
+      goal=2000;data={[todayKey]:[]};drinks=normalizeDrinks(defaultDrinks);hydroPrefs=defaultHydroPrefs();
       update();updateExtended();showAuthGate();
     }
   });
