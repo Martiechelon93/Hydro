@@ -1,4 +1,4 @@
-# Hydro 8.4.15
+# Hydro 8.4.16
 
 PWA per il monitoraggio dell'idratazione, con account Firebase, sincronizzazione Firestore, uso offline e notifiche Web Push/FCM.
 
@@ -82,3 +82,7 @@ firebase deploy --only firestore:rules
 ```
 
 Il file `firebase.json` contiene solo la configurazione Firestore.
+
+
+## Novità 8.4.16
+- Orario attivo dei promemoria personalizzabile dall'app; il valore viene sincronizzato con Firebase e usato dallo scheduler GitHub Actions.

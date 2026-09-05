@@ -6,9 +6,9 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const messaging = admin.messaging();
-const VERSION = '8.4.15';
-const ACTIVE_START_MIN = 8 * 60;
-const ACTIVE_END_MIN = 22 * 60;
+const VERSION = '8.4.16';
+const DEFAULT_ACTIVE_START_MIN = 8 * 60;
+const DEFAULT_ACTIVE_END_MIN = 22 * 60;
 
 function getLocalParts(date, timeZone) {
   const parts = new Intl.DateTimeFormat('en-CA', {
@@ -27,6 +27,15 @@ function getLocalParts(date, timeZone) {
 function minutesFromHHMM(value) {
   const m = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
   return m ? Number(m[1]) * 60 + Number(m[2]) : null;
+}
+
+function getActiveWindow(prefs) {
+  const start = minutesFromHHMM(prefs.remStart);
+  const end = minutesFromHHMM(prefs.remEnd);
+  if (start == null || end == null || start >= end) {
+    return {start: DEFAULT_ACTIVE_START_MIN, end: DEFAULT_ACTIVE_END_MIN};
+  }
+  return {start, end};
 }
 
 function calculateReminderInterval(prefs, totalMl, goal) {
@@ -169,7 +178,8 @@ async function main() {
     catch (error) { console.error(`Hydro test request scan failed for ${userDoc.id}`, error); stats.testErrors++; }
 
     if (prefs.remOn !== true) continue;
-    if (local.minutes < ACTIVE_START_MIN || local.minutes >= ACTIVE_END_MIN) { stats.outsideHours++; continue; }
+    const activeWindow = getActiveWindow(prefs);
+    if (local.minutes < activeWindow.start || local.minutes >= activeWindow.end) { stats.outsideHours++; continue; }
 
     const goal = Math.max(500, Number(payload.goal) || 2000);
     const entries = Array.isArray(payload.data?.[local.date]) ? payload.data[local.date] : [];
@@ -185,7 +195,7 @@ async function main() {
     const lastSentAt = Number(state.lastSentAtMs) || 0;
     if (lastSentAt) {
       if (Math.floor((Date.now() - lastSentAt) / 60000) < interval) { stats.recentSend++; continue; }
-    } else if (local.minutes < ACTIVE_START_MIN + interval) { stats.startupWait++; continue; }
+    } else if (local.minutes < activeWindow.start + interval) { stats.startupWait++; continue; }
 
     stats.eligible++;
     try {
