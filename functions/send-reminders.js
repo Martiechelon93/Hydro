@@ -6,7 +6,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const messaging = admin.messaging();
-const VERSION = '8.4.12';
+const VERSION = '8.4.13';
 const ACTIVE_START_MIN = 8 * 60;
 const ACTIVE_END_MIN = 22 * 60;
 
@@ -88,13 +88,80 @@ async function sendReminder(userRef, local, totalMl, goal) {
   return {sent: response.successCount, removed: deletes.length};
 }
 
+async function sendTestPush(userRef, local) {
+  const tokenRows = await getTokens(userRef);
+  if (!tokenRows.length) return {sent: 0, removed: 0};
+  const response = await messaging.sendEachForMulticast({
+    tokens: tokenRows.map(x => x.token),
+    notification: {
+      title: 'Hydro · test push',
+      body: 'La notifica push di prova di Hydro funziona!'
+    },
+    data: {
+      type: 'hydro_test', date: local.date,
+      url: 'https://martiechelon93.github.io/Hydro/'
+    },
+    webpush: {
+      fcmOptions: {link: 'https://martiechelon93.github.io/Hydro/'},
+      notification: {
+        icon: 'https://martiechelon93.github.io/Hydro/icon-192.png',
+        badge: 'https://martiechelon93.github.io/Hydro/icon-192.png',
+        tag: 'hydro-test'
+      }
+    }
+  });
+  const deletes = [];
+  response.responses.forEach((result, i) => {
+    const code = result.error?.code || '';
+    if (code === 'messaging/registration-token-not-registered' || code === 'messaging/invalid-registration-token') deletes.push(tokenRows[i].id);
+  });
+  for (const id of deletes) await userRef.collection('pushTokens').doc(id).delete().catch(() => {});
+  return {sent: response.successCount, removed: deletes.length, errors: response.failureCount};
+}
+
+async function processTestRequests(userDoc, local, stats) {
+  const ref = userDoc.ref.collection('pushTestRequests');
+  const snap = await ref.where('status', '==', 'pending').get();
+  if (snap.empty) return;
+  stats.testRequests += snap.size;
+  for (const doc of snap.docs) {
+    const req = doc.data() || {};
+    const requestedAt = Number(req.requestedAtMs) || 0;
+    if (requestedAt && Date.now() - requestedAt > 24 * 60 * 60 * 1000) {
+      await doc.ref.set({status: 'expired', processedAtMs: Date.now(), version: VERSION}, {merge: true});
+      stats.testExpired++;
+      continue;
+    }
+    try {
+      const result = await sendTestPush(userDoc.ref, local);
+      if (result.sent > 0) {
+        await doc.ref.set({status: 'sent', sentAtMs: Date.now(), sentCount: result.sent, removedTokens: result.removed, version: VERSION}, {merge: true});
+        stats.testSent += result.sent;
+      } else {
+        await doc.ref.set({status: 'error', error: 'Nessun token FCM attivo su questo dispositivo.', processedAtMs: Date.now(), removedTokens: result.removed, version: VERSION}, {merge: true});
+        stats.testNoToken++;
+      }
+      stats.removed += result.removed;
+    } catch (error) {
+      console.error(`Hydro test push failed for ${userDoc.id}/${doc.id}`, error);
+      await doc.ref.set({status: 'error', error: String(error?.message || error), processedAtMs: Date.now(), version: VERSION}, {merge: true});
+      stats.testErrors++;
+    }
+  }
+}
+
 async function main() {
-  const users = await db.collection('users').where('payload.hydroPrefs.remOn', '==', true).get();
-  let checked = 0, sent = 0, removed = 0;
+  const users = await db.collection('users').get();
+  const stats = {
+    users: users.size, checked: 0, eligible: 0, sent: 0, removed: 0,
+    outsideHours: 0, goalReached: 0, duplicate: 0, recentDrink: 0,
+    recentSend: 0, startupWait: 0, noTokens: 0, errors: 0,
+    testRequests: 0, testSent: 0, testNoToken: 0, testErrors: 0, testExpired: 0
+  };
   const now = new Date();
 
   for (const userDoc of users.docs) {
-    checked++;
+    stats.checked++;
     const user = userDoc.data() || {};
     const payload = user.payload || {};
     const prefs = payload.hydroPrefs || {};
@@ -102,37 +169,75 @@ async function main() {
     let local;
     try { local = getLocalParts(now, timeZone); }
     catch { timeZone = 'Europe/Rome'; local = getLocalParts(now, timeZone); }
-    if (local.minutes < ACTIVE_START_MIN || local.minutes >= ACTIVE_END_MIN) continue;
+
+    // A test request is independent of reminder settings, hours, goal and interval.
+    try { await processTestRequests(userDoc, local, stats); }
+    catch (error) { console.error(`Hydro test request scan failed for ${userDoc.id}`, error); stats.testErrors++; }
+
+    if (prefs.remOn !== true) continue;
+    if (local.minutes < ACTIVE_START_MIN || local.minutes >= ACTIVE_END_MIN) { stats.outsideHours++; continue; }
 
     const goal = Math.max(500, Number(payload.goal) || 2000);
     const entries = Array.isArray(payload.data?.[local.date]) ? payload.data[local.date] : [];
     const totalMl = entries.reduce((sum, x) => sum + (Number(x?.ml) || 0), 0);
-    if (totalMl >= goal) continue;
+    if (totalMl >= goal) { stats.goalReached++; continue; }
 
     const interval = calculateReminderInterval(prefs, totalMl, goal);
     const state = user.reminderState || {};
-    if (state.lastReminderKey === `${local.date}-${String(local.minutes).padStart(4, '0')}`) continue;
+    const reminderKey = `${local.date}-${String(local.minutes).padStart(4, '0')}`;
+    if (state.lastReminderKey === reminderKey) { stats.duplicate++; continue; }
     const lastDrinkAgo = lastDrinkMinutesAgo(entries, local);
-    if (lastDrinkAgo != null && lastDrinkAgo < interval) continue;
+    if (lastDrinkAgo != null && lastDrinkAgo < interval) { stats.recentDrink++; continue; }
     const lastSentAt = Number(state.lastSentAtMs) || 0;
     if (lastSentAt) {
-      if (Math.floor((Date.now() - lastSentAt) / 60000) < interval) continue;
-    } else if (local.minutes < ACTIVE_START_MIN + interval) continue;
+      if (Math.floor((Date.now() - lastSentAt) / 60000) < interval) { stats.recentSend++; continue; }
+    } else if (local.minutes < ACTIVE_START_MIN + interval) { stats.startupWait++; continue; }
 
+    stats.eligible++;
     try {
       const result = await sendReminder(userDoc.ref, local, totalMl, goal);
-      sent += result.sent; removed += result.removed;
+      stats.sent += result.sent; stats.removed += result.removed;
       if (result.sent > 0) {
         await userDoc.ref.set({reminderState: {
-          lastReminderKey: `${local.date}-${String(local.minutes).padStart(4, '0')}`,
+          lastReminderKey: reminderKey,
           lastSentAtMs: Date.now(), lastSentDate: local.date,
           lastSentTime: `${String(local.hour).padStart(2, '0')}:${String(local.minute).padStart(2, '0')}`,
           version: VERSION,
         }}, {merge: true});
+      } else {
+        stats.noTokens++;
       }
-    } catch (error) { console.error(`Hydro reminder failed for ${userDoc.id}`, error); }
+    } catch (error) {
+      stats.errors++;
+      console.error(`Hydro reminder failed for ${userDoc.id}`, error);
+    }
   }
-  console.log(`Hydro GitHub push scheduler ${VERSION}: checked=${checked}, sent=${sent}, removed=${removed}`);
+
+  console.log(`Hydro GitHub push scheduler ${VERSION}`);
+  console.log(JSON.stringify({
+    users: stats.users,
+    checked: stats.checked,
+    eligible: stats.eligible,
+    notificationsSent: stats.sent,
+    invalidTokensRemoved: stats.removed,
+    skipped: {
+      outsideHours: stats.outsideHours,
+      goalReached: stats.goalReached,
+      duplicate: stats.duplicate,
+      recentDrink: stats.recentDrink,
+      recentSend: stats.recentSend,
+      startupWait: stats.startupWait,
+      noTokens: stats.noTokens
+    },
+    test: {
+      requests: stats.testRequests,
+      sent: stats.testSent,
+      noToken: stats.testNoToken,
+      errors: stats.testErrors,
+      expired: stats.testExpired
+    },
+    errors: stats.errors
+  }, null, 2));
 }
 
 main().catch(error => { console.error(error); process.exit(1); });

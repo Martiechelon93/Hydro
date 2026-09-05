@@ -1,13 +1,16 @@
-# Hydro 8.4.12
+# Hydro 8.4.13
 
 PWA per il monitoraggio dell'idratazione, con account Firebase, sincronizzazione Firestore, uso offline e notifiche Web Push/FCM.
 
-## Novità 8.4.12
+## Novità 8.4.13
 - Corretto il problema delle date: Hydro usa ora la **data locale** del dispositivo, non la data UTC, per registrazioni, calendario e statistiche.
 - Aggiunta una migrazione automatica dei dati creati dalle versioni precedenti che usavano chiavi data UTC.
 - Il giorno corrente viene aggiornato anche se l'app resta aperta durante il passaggio di mezzanotte.
 - Corretto anche il selettore lato scheduler: i promemoria leggono il giorno locale dell'utente in base al suo fuso orario.
 - Aggiornato GitHub Actions a **Node.js 24**.
+- Aggiunto un vero test push dall’app: Hydro crea una richiesta in Firestore e GitHub Actions la invia tramite FCM, senza Firebase Cloud Functions a pagamento.
+- Lo scheduler ora stampa un riepilogo diagnostico dei motivi per cui una notifica è stata inviata o saltata.
+- Il workflow usa esplicitamente il fuso **Europe/Rome**; GitHub documenta che i cron possono usare un fuso IANA e che l’intervallo minimo è 5 minuti.
 - Pulita l'architettura dello scheduler: l'invio automatico usa GitHub Actions.
 - Rimasto invariato il comportamento già testato: fascia 08:00–22:00, intervalli 30/45/60/90/120 min, modalità smart, più dispositivi e rimozione dei token FCM non validi.
 
@@ -60,7 +63,7 @@ Per attivare le notifiche:
 3. autorizzare le notifiche;
 4. verificare che compaia **Dispositivo registrato / ATTIVE**.
 
-Per un test manuale si può usare la console Firebase Cloud Messaging e il token presente in `users/{uid}/pushTokens/{tokenId}`.
+Il pulsante **Invia notifica di prova** ora esegue un vero test end-to-end: registra il dispositivo, crea una richiesta `pushTestRequests` e attende il successivo controllo di GitHub Actions (entro circa 5 minuti). Non serve più aprire la console Firebase per il test normale.
 
 ## iPhone
 

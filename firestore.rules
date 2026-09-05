@@ -6,6 +6,9 @@ service cloud.firestore {
       match /pushTokens/{tokenId} {
         allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
       }
+      match /pushTestRequests/{requestId} {
+        allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
   }
 }
