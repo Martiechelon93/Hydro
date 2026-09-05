@@ -6,7 +6,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const messaging = admin.messaging();
-const VERSION = '8.4.13';
+const VERSION = '8.4.14';
 const ACTIVE_START_MIN = 8 * 60;
 const ACTIVE_END_MIN = 22 * 60;
 
