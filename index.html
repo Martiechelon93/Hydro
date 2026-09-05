@@ -113,7 +113,7 @@ body{padding:20px 14px 104px;overflow-x:hidden}.app{width:min(430px,100%);margin
 </div>
 <div class="card"><div class="title">➕ Bevande personalizzate</div><div class="note">Crea e gestisci le tue bevande con nome, icona, quantità predefinita e calorie personalizzate.</div><button class="primary" onclick="addCustomDrink()">＋ Crea bevanda</button></div>
 
-<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.3.2</div></div>
+<div class="card version-card"><div><div class="title">💧 Hydro</div><div class="small">La tua app per l'idratazione quotidiana</div></div><div class="version-pill">Versione 8.3.3</div></div>
 </section>
 </div>
 
@@ -139,7 +139,7 @@ let firebaseApp=null,auth=null,db=null,currentUser=null,cloudSaveTimer=null,clou
 if(FIREBASE_ENABLED){try{firebaseApp=firebase.initializeApp(FIREBASE_CONFIG);auth=firebase.auth();db=firebase.firestore();auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(e=>console.warn("Auth persistence",e));db.enablePersistence({synchronizeTabs:true}).then(()=>console.log("Firestore offline persistence enabled")).catch(e=>console.warn("Firestore offline persistence",e));}catch(e){firebaseInitError=e;console.error("Firebase init",e)}}
 </script>
 <script>
-const HYDRO_VERSION="8.3.2";
+const HYDRO_VERSION="8.3.3";
 localStorage.removeItem('hydroVapidKey');
 const defaultDrinks=[
 {name:'Acqua',icon:'💧',ml:250,kcal:0},{name:'Caffè',icon:'☕',ml:80,kcal:2},
@@ -153,7 +153,7 @@ document.getElementById('date').textContent=new Date().toLocaleDateString('it-IT
 function save(){localStorage.goal=goal;localStorage.hydroData=JSON.stringify(data);localStorage.hydroDrinks=JSON.stringify(drinks)}
 function total(k=todayKey){return (data[k]||[]).reduce((s,x)=>s+x.ml,0)}
 function kcal(k=todayKey){return (data[k]||[]).reduce((s,x)=>s+x.kcal,0)}
-function addEntry(d){data[todayKey].push({...d,id:crypto.randomUUID?crypto.randomUUID():Date.now()+Math.random(),time:new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})});save();update()}
+function addEntry(d){if(!Array.isArray(data[todayKey]))data[todayKey]=[];data[todayKey].push({...d,id:crypto.randomUUID?crypto.randomUUID():Date.now()+Math.random(),time:new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})});save();update()}
 function addWater(ml){addEntry({name:'Acqua',icon:'💧',ml,kcal:0})}
 function renderDrinks(){document.getElementById('drinks').innerHTML=drinks.map((d,i)=>`<button class="drink" onclick="drink(${i})"><span class="ico">${d.icon}</span><b>${d.name}</b><small>${d.ml} ml · ${d.kcal} kcal</small></button>`).join('')}
 function drink(i){addEntry(drinks[i])}
@@ -332,6 +332,9 @@ async function loadCloudData(){
       const p=snap.data().payload||{};
       if(typeof p.goal==='number')goal=p.goal;
       if(p.data&&typeof p.data==='object')data=p.data;
+      // Dopo il cambio di giorno il documento cloud può non contenere ancora la chiave di oggi.
+      // Garantiamo sempre un array valido, così i nuovi intake possono essere registrati.
+      if(!Array.isArray(data[todayKey]))data[todayKey]=[];
       if(Array.isArray(p.drinks))drinks=p.drinks;
       let keepLocalPrefs=false;
       if(p.hydroPrefs&&typeof p.hydroPrefs==='object'){
