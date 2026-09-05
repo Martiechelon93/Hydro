@@ -6,7 +6,7 @@ admin.initializeApp();
 
 // Endpoint di verifica: non invia notifiche. Serve per controllare che le Functions siano deployate.
 exports.pushHealth = onRequest({region:"europe-west1"}, (req, res) => {
-  res.status(200).json({ok:true, service:"hydro-push", version:"8.4.8"});
+  res.status(200).json({ok:true, service:"hydro-push", version:"8.4.9"});
 });
 
 // Placeholder per la fase 2: qui verrà inserita la logica dei promemoria automatici.
