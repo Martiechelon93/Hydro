@@ -6,7 +6,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const messaging = admin.messaging();
-const VERSION = '8.4.11';
+const VERSION = '8.4.12';
 const ACTIVE_START_MIN = 8 * 60;
 const ACTIVE_END_MIN = 22 * 60;
 
@@ -92,7 +92,6 @@ async function main() {
   const users = await db.collection('users').where('payload.hydroPrefs.remOn', '==', true).get();
   let checked = 0, sent = 0, removed = 0;
   const now = new Date();
-  const utcDate = now.toISOString().slice(0, 10);
 
   for (const userDoc of users.docs) {
     checked++;
@@ -106,7 +105,7 @@ async function main() {
     if (local.minutes < ACTIVE_START_MIN || local.minutes >= ACTIVE_END_MIN) continue;
 
     const goal = Math.max(500, Number(payload.goal) || 2000);
-    const entries = Array.isArray(payload.data?.[utcDate]) ? payload.data[utcDate] : [];
+    const entries = Array.isArray(payload.data?.[local.date]) ? payload.data[local.date] : [];
     const totalMl = entries.reduce((sum, x) => sum + (Number(x?.ml) || 0), 0);
     if (totalMl >= goal) continue;
 

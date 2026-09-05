@@ -1,30 +1,36 @@
-# Hydro 8.4.11
+# Hydro 8.4.12
 
-PWA per il monitoraggio dell'idratazione, con account Firebase, sincronizzazione Firestore, offline e notifiche Web Push/FCM.
+PWA per il monitoraggio dell'idratazione, con account Firebase, sincronizzazione Firestore, uso offline e notifiche Web Push/FCM.
 
-## Novità 8.4.11
-- Notifiche push FCM già testate con successo su iPhone.
-- Nuova Cloud Function `pushScheduler` per i promemoria automatici.
-- Controllo ogni 5 minuti degli utenti con promemoria attivi.
-- Fascia attiva attuale: 08:00–22:00.
-- Rispetta l'intervallo scelto in Hydro (30/45/60/90/120 minuti).
-- Modalità smart: modifica l'intervallo in base al consumo, come nell'app.
-- Dopo una registrazione recente evita di inviare subito un altro promemoria.
-- Supporto a più dispositivi/token per lo stesso account.
-- Rimuove automaticamente token FCM non più validi.
-- La versione installata è sempre visibile nelle Impostazioni: **8.4.11**.
+## Novità 8.4.12
+- Corretto il problema delle date: Hydro usa ora la **data locale** del dispositivo, non la data UTC, per registrazioni, calendario e statistiche.
+- Aggiunta una migrazione automatica dei dati creati dalle versioni precedenti che usavano chiavi data UTC.
+- Il giorno corrente viene aggiornato anche se l'app resta aperta durante il passaggio di mezzanotte.
+- Corretto anche il selettore lato scheduler: i promemoria leggono il giorno locale dell'utente in base al suo fuso orario.
+- Aggiornato GitHub Actions a **Node.js 24**.
+- Pulita l'architettura dello scheduler: l'invio automatico usa GitHub Actions.
+- Rimasto invariato il comportamento già testato: fascia 08:00–22:00, intervalli 30/45/60/90/120 min, modalità smart, più dispositivi e rimozione dei token FCM non validi.
 
-## Configurazione Firebase
+## Architettura gratuita
 
-La Web App Firebase è già configurata nel file `index.html`.
+Il flusso automatico è:
 
-Sono utilizzati:
+**Hydro → token FCM → Firestore → GitHub Actions → FCM → iPhone**
+
+Firebase viene usato per:
 1. **Authentication → Email/Password** per gli account.
-2. **Cloud Firestore** per dati e token push.
-3. **Firebase Cloud Messaging** per le notifiche.
-4. **Cloud Functions** per l'invio automatico dei promemoria.
+2. **Cloud Firestore** per dati, profilo e token push.
+3. **Firebase Cloud Messaging (FCM)** per le notifiche.
 
-Non inserire mai nel repository chiavi private o file JSON di Service Account.
+La pianificazione dei promemoria viene eseguita da **GitHub Actions ogni 5 minuti**. Questo mantiene lo scheduler separato dal piano di fatturazione Firebase/Google Cloud.
+
+## Sicurezza
+
+La chiave VAPID pubblica e la configurazione Web Firebase possono stare nel client. **Non inserire mai nel repository, nel codice client o in chat la chiave privata VAPID o il JSON privato del Service Account.**
+
+Il JSON del Service Account viene conservato esclusivamente nel secret GitHub:
+
+`FIREBASE_SERVICE_ACCOUNT_JSON`
 
 ## Firestore
 
@@ -32,62 +38,44 @@ Ogni account usa `users/{uid}`. I token push sono salvati in:
 
 `users/{uid}/pushTokens/{tokenId}`
 
-Le regole devono consentire all'utente autenticato di accedere solo al proprio documento e ai propri token.
+Le regole consentono all'utente autenticato di accedere solo al proprio documento e ai propri token.
+
+## GitHub Actions
+
+Il workflow è:
+
+`.github/workflows/hydro-push-reminders.yml`
+
+Esegue il controllo ogni 5 minuti e può essere avviato manualmente da **Actions → Hydro Push Reminders → Run workflow**.
+
+Il job usa Node.js 24 e il solo pacchetto `firebase-admin` per leggere Firestore e inviare i messaggi FCM.
+
+> Nota: GitHub può ritardare occasionalmente l'avvio di un workflow pianificato. Per questo un promemoria può arrivare qualche minuto dopo l'orario teorico, ma il controllo resta ogni 5 minuti.
 
 ## Notifiche Web Push / FCM
 
-Il flusso automatico è:
+Per attivare le notifiche:
+1. accedere a Hydro;
+2. aprire le impostazioni/promemoria;
+3. autorizzare le notifiche;
+4. verificare che compaia **Dispositivo registrato / ATTIVE**.
 
-**Hydro → token FCM → Firestore → Cloud Function → FCM → iPhone**
+Per un test manuale si può usare la console Firebase Cloud Messaging e il token presente in `users/{uid}/pushTokens/{tokenId}`.
 
-La chiave VAPID pubblica è presente nel client. La chiave privata non deve mai essere inserita in Hydro o in GitHub.
+## iPhone
 
-### Pubblicazione delle regole
+Per ricevere Web Push su iPhone/iPadOS, Hydro deve essere installato nella schermata Home tramite Safari. Il dispositivo deve inoltre essere online quando il messaggio viene consegnato.
+
+## Offline e sincronizzazione
+
+Hydro continua a registrare i dati sul dispositivo quando non c'è connessione. Quando la connessione torna disponibile, i dati vengono sincronizzati con Firestore. I promemoria automatici vengono calcolati da GitHub Actions leggendo i dati sincronizzati nel cloud.
+
+## Regole Firestore
+
+Per pubblicare le regole: 
 
 ```bash
 firebase deploy --only firestore:rules
 ```
 
-### Pubblicazione della Cloud Function
-
-Dalla cartella principale del progetto:
-
-```bash
-firebase login
-firebase use hydro-f2428
-firebase deploy --only functions:pushScheduler,functions:pushHealth
-```
-
-La funzione `pushScheduler` viene eseguita ogni 5 minuti e controlla gli utenti con `remOn=true`. Usa il fuso orario salvato nel profilo e la fascia 08:00–22:00.
-
-> Le funzioni pianificate usano Cloud Scheduler e richiedono un progetto Firebase/Google Cloud con fatturazione attiva (piano Blaze). Il costo dipende dall'utilizzo; un singolo job di scheduler è sufficiente per tutti gli utenti di Hydro.
-
-### Test push già eseguito
-
-Per verificare FCM manualmente:
-1. accedere a Hydro;
-2. autorizzare le notifiche;
-3. verificare `pushTokens` in Firestore;
-4. usare **Invia messaggio di prova** nella console Firebase Cloud Messaging;
-5. incollare il token FCM nel pannello di test.
-
-Questo test è già stato completato con ricezione corretta della notifica su iPhone.
-
-## GitHub Pages
-
-Hydro può continuare a essere pubblicato su GitHub Pages in HTTPS. La PWA resta utilizzabile offline; per ricevere nuove notifiche automatiche il dispositivo deve essere online.
-
-## iPhone
-
-Per Web Push su iPhone/iPadOS:
-1. aprire Hydro in Safari;
-2. aggiungerlo alla schermata Home;
-3. accedere all'account;
-4. autorizzare le notifiche;
-5. verificare che in Impostazioni compaia **Dispositivo registrato / ATTIVE**.
-
-Se Apple Watch è configurato per inoltrare le notifiche dell'iPhone, può mostrarle secondo le impostazioni di iOS/watchOS.
-
-## Offline e sincronizzazione
-
-Hydro continua a registrare i dati localmente e usa Firestore per la sincronizzazione dell'account. Le notifiche automatiche vengono calcolate lato server, quindi richiedono la connessione del dispositivo al momento della consegna.
+Il file `firebase.json` contiene solo la configurazione Firestore.
