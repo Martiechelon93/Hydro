@@ -6,7 +6,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const messaging = admin.messaging();
-const VERSION = '8.4.14';
+const VERSION = '8.4.15';
 const ACTIVE_START_MIN = 8 * 60;
 const ACTIVE_END_MIN = 22 * 60;
 
@@ -59,24 +59,17 @@ async function sendReminder(userRef, local, totalMl, goal) {
   const remaining = Math.max(goal - totalMl, 0);
   const response = await messaging.sendEachForMulticast({
     tokens: tokenRows.map(x => x.token),
-    notification: {
+    data: {
+      type: 'hydro_reminder', date: local.date,
       title: '💧 È il momento di bere',
       body: remaining > 0
         ? `Hai bevuto ${totalMl.toLocaleString('it-IT')} ml su ${goal.toLocaleString('it-IT')} ml. Un po\' d\'acqua adesso ti aiuta a continuare.`
         : 'Hai raggiunto il tuo obiettivo di oggi. Continua così!',
-    },
-    data: {
-      type: 'hydro_reminder', date: local.date,
       remainingMl: String(remaining), totalMl: String(totalMl), goalMl: String(goal),
       url: 'https://martiechelon93.github.io/Hydro/',
     },
     webpush: {
       fcmOptions: {link: 'https://martiechelon93.github.io/Hydro/'},
-      notification: {
-        icon: 'https://martiechelon93.github.io/Hydro/icon-192.png',
-        badge: 'https://martiechelon93.github.io/Hydro/icon-192.png',
-        tag: 'hydro-reminder',
-      },
     },
   });
   const deletes = [];
@@ -88,26 +81,27 @@ async function sendReminder(userRef, local, totalMl, goal) {
   return {sent: response.successCount, removed: deletes.length};
 }
 
-async function sendTestPush(userRef, local) {
-  const tokenRows = await getTokens(userRef);
+async function sendTestPush(userRef, local, requestedTokenId) {
+  let tokenRows;
+  if (requestedTokenId) {
+    const doc = await userRef.collection('pushTokens').doc(requestedTokenId).get();
+    const token = doc.exists ? doc.data()?.token : null;
+    tokenRows = typeof token === 'string' && token.length > 20 ? [{id: requestedTokenId, token}] : [];
+  } else {
+    tokenRows = await getTokens(userRef);
+  }
+  if (!tokenRows.length) return {sent: 0, removed: 0};
   if (!tokenRows.length) return {sent: 0, removed: 0};
   const response = await messaging.sendEachForMulticast({
     tokens: tokenRows.map(x => x.token),
-    notification: {
-      title: 'Hydro · test push',
-      body: 'La notifica push di prova di Hydro funziona!'
-    },
     data: {
       type: 'hydro_test', date: local.date,
+      title: 'Hydro · test push',
+      body: 'La notifica push di prova di Hydro funziona!',
       url: 'https://martiechelon93.github.io/Hydro/'
     },
     webpush: {
-      fcmOptions: {link: 'https://martiechelon93.github.io/Hydro/'},
-      notification: {
-        icon: 'https://martiechelon93.github.io/Hydro/icon-192.png',
-        badge: 'https://martiechelon93.github.io/Hydro/icon-192.png',
-        tag: 'hydro-test'
-      }
+      fcmOptions: {link: 'https://martiechelon93.github.io/Hydro/'}
     }
   });
   const deletes = [];
@@ -133,7 +127,7 @@ async function processTestRequests(userDoc, local, stats) {
       continue;
     }
     try {
-      const result = await sendTestPush(userDoc.ref, local);
+      const result = await sendTestPush(userDoc.ref, local, req.tokenId || '');
       if (result.sent > 0) {
         await doc.ref.set({status: 'sent', sentAtMs: Date.now(), sentCount: result.sent, removedTokens: result.removed, version: VERSION}, {merge: true});
         stats.testSent += result.sent;

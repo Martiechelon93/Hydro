@@ -1,8 +1,8 @@
-# Hydro 8.4.14
+# Hydro 8.4.15
 
 PWA per il monitoraggio dell'idratazione, con account Firebase, sincronizzazione Firestore, uso offline e notifiche Web Push/FCM.
 
-## Novità 8.4.14
+## Novità 8.4.15
 - Corretto il problema delle date: Hydro usa ora la **data locale** del dispositivo, non la data UTC, per registrazioni, calendario e statistiche.
 - Aggiunta una migrazione automatica dei dati creati dalle versioni precedenti che usavano chiavi data UTC.
 - Il giorno corrente viene aggiornato anche se l'app resta aperta durante il passaggio di mezzanotte.

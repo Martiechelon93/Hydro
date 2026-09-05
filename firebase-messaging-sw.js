@@ -13,14 +13,16 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 messaging.onBackgroundMessage(payload => {
-  const n = payload.notification || {};
-  const title = n.title || 'Hydro 💧';
+  const d = payload.data || {};
+  const title = d.title || 'Hydro 💧';
+  const body = d.body || 'È il momento di bere un po’ d’acqua.';
+  const tag = d.type === 'hydro_test' ? 'hydro-test' : 'hydro-reminder';
   self.registration.showNotification(title, {
-    body: n.body || 'È il momento di bere un po’ d’acqua.',
+    body,
     icon: './icon-192.png',
     badge: './icon-192.png',
-    tag: payload.data?.tag || 'hydro-reminder',
-    data: { url: payload.fcmOptions?.link || './' }
+    tag,
+    data: { url: d.url || './' }
   });
 });
 self.addEventListener('notificationclick', event => {
