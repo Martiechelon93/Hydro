@@ -3,6 +3,7 @@ name: Hydro Push Reminders
 on:
   schedule:
     - cron: '*/5 * * * *'
+      timezone: 'Europe/Rome'
   workflow_dispatch:
 
 jobs:
@@ -10,20 +11,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
+          node-version: 24
       - name: Install Firebase Admin dependencies
         working-directory: functions
         run: npm install --omit=dev
-
       - name: Send Hydro reminders
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/firebase-service-account.json
