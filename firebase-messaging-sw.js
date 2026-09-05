@@ -1,6 +1,6 @@
 /* Hydro Web Push / Firebase Cloud Messaging service worker. */
-importScripts('https://www.gstatic.com/firebasejs/12.2.1/firebase-app-compat.js');
-importScripts('https://www.gstatic.com/firebasejs/12.2.1/firebase-messaging-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/12.18.0/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/12.18.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
   apiKey: "AIzaSyAzoriZ9E6_aGI1DKVs7WfKhQwMwhTwGvg",
