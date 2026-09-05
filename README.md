@@ -1,4 +1,4 @@
-# Hydro 8.3.2
+# Hydro 8.3.7
 
 PWA statica per il monitoraggio dell'idratazione.
 
