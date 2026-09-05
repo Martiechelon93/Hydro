@@ -1,120 +1,93 @@
-# Hydro 8.4.9
+# Hydro 8.4.11
 
-PWA statica per il monitoraggio dell'idratazione.
+PWA per il monitoraggio dell'idratazione, con account Firebase, sincronizzazione Firestore, offline e notifiche Web Push/FCM.
 
-## Novità 8.3.2
-- Account multipli con Firebase Authentication (email + password).
-- Recupero password tramite Firebase.
-- Sincronizzazione dei dati personali con Cloud Firestore.
-- Pulsante **Modifica** per correggere le registrazioni di consumo (quantità, bevanda, calorie e orario).
-- Possibilità di modificare anche le bevande personalizzate.
-- Foto profilo: resta locale senza account; con account viene inclusa nella sincronizzazione.
-- Backup Excel (.xlsx).
-- Interfaccia azzurra stile iOS, goccia animata e PWA.
-- Versione mostrata nelle Impostazioni: **8.3.2**.
+## Novità 8.4.11
+- Notifiche push FCM già testate con successo su iPhone.
+- Nuova Cloud Function `pushScheduler` per i promemoria automatici.
+- Controllo ogni 5 minuti degli utenti con promemoria attivi.
+- Fascia attiva attuale: 08:00–22:00.
+- Rispetta l'intervallo scelto in Hydro (30/45/60/90/120 minuti).
+- Modalità smart: modifica l'intervallo in base al consumo, come nell'app.
+- Dopo una registrazione recente evita di inviare subito un altro promemoria.
+- Supporto a più dispositivi/token per lo stesso account.
+- Rimuove automaticamente token FCM non più validi.
+- La versione installata è sempre visibile nelle Impostazioni: **8.4.11**.
 
 ## Configurazione Firebase
 
-La Web App Firebase è già configurata nel file `index.html`. Prima della pubblicazione assicurati che siano attivi:
+La Web App Firebase è già configurata nel file `index.html`.
 
-1. **Authentication → Sign-in method → Email/Password**.
-2. **Cloud Firestore Database**.
+Sono utilizzati:
+1. **Authentication → Email/Password** per gli account.
+2. **Cloud Firestore** per dati e token push.
+3. **Firebase Cloud Messaging** per le notifiche.
+4. **Cloud Functions** per l'invio automatico dei promemoria.
 
-Esempio di struttura (usa i valori forniti dal tuo progetto Firebase):
-
-```js
-const FIREBASE_CONFIG={
-  apiKey:"...",
-  authDomain:"...",
-  projectId:"...",
-  storageBucket:"...",
-  messagingSenderId:"...",
-  appId:"..."
-};
-```
-
-La configurazione Web Firebase destinata al client non contiene una password amministrativa. **Non inserire mai chiavi private/service-account nel file HTML.** La sicurezza dei dati è affidata alle Security Rules di Firestore.
+Non inserire mai nel repository chiavi private o file JSON di Service Account.
 
 ## Firestore
 
-Hydro usa un documento per utente nella collection `users`, con ID uguale al Firebase UID. Il documento contiene il payload di Hydro (`goal`, `data`, `drinks`, `hydroPrefs`).
+Ogni account usa `users/{uid}`. I token push sono salvati in:
 
-Attiva le regole di sicurezza e consenti a ogni utente autenticato di leggere/scrivere esclusivamente il proprio documento:
+`users/{uid}/pushTokens/{tokenId}`
 
-```txt
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-  }
-}
-```
+Le regole devono consentire all'utente autenticato di accedere solo al proprio documento e ai propri token.
 
-## Comportamento della sincronizzazione
-- Senza account: Hydro continua a funzionare interamente in locale.
-- Primo accesso a un account senza dati cloud: i dati locali vengono associati all'account.
-- Account già usato: vengono caricati i dati presenti su Firestore.
-- Le modifiche successive vengono sincronizzate automaticamente con un breve ritardo.
+## Notifiche Web Push / FCM
 
-## GitHub Pages
-Il progetto può continuare a essere pubblicato su GitHub Pages. Firebase Authentication e Firestore funzionano con la PWA servita in HTTPS.
+Il flusso automatico è:
 
-## Notifiche Web Push / Apple Watch
-La versione 8.3.2 prepara Hydro per **Firebase Cloud Messaging (FCM)**, così i promemoria possono essere inviati anche quando la PWA non è aperta. Il flusso è: Hydro → token Web Push → Firestore → Cloud Function programmata → FCM → iPhone → eventuale mirroring su Apple Watch. FCM richiede una coppia di chiavi VAPID per il client web.
+**Hydro → token FCM → Firestore → Cloud Function → FCM → iPhone**
 
-### 1. Genera la chiave VAPID
-In Firebase Console apri **Project settings → Cloud Messaging → Web Push certificates → Generate key pair**. Copia la **chiave pubblica**. È sufficiente inserirla in Hydro nelle Impostazioni → Web Push; non è una chiave segreta.
+La chiave VAPID pubblica è presente nel client. La chiave privata non deve mai essere inserita in Hydro o in GitHub.
 
-### 2. Pubblica le regole Firestore aggiornate
-Il file `firestore.rules` incluso nel pacchetto aggiunge la sotto-collection `users/{uid}/pushTokens/{tokenId}`. Puoi pubblicarla con:
+### Pubblicazione delle regole
 
 ```bash
 firebase deploy --only firestore:rules
 ```
 
-### 3. Pubblica la Cloud Function
-La cartella `functions/` contiene `sendHydroReminders`, che controlla ogni 15 minuti gli utenti con promemoria attivi e invia una notifica se è trascorso l'intervallo impostato. Per pubblicarla:
+### Pubblicazione della Cloud Function
+
+Dalla cartella principale del progetto:
 
 ```bash
 firebase login
 firebase use hydro-f2428
-firebase deploy --only functions:sendHydroReminders
+firebase deploy --only functions:pushScheduler,functions:pushHealth
 ```
 
-La funzione usa le credenziali server gestite da Firebase/Google Cloud: **non inserire service-account JSON nel repository**. Le funzioni pianificate richiedono il servizio di scheduling di Firebase/Google Cloud e possono richiedere un piano Firebase/Cloud con fatturazione attiva.
+La funzione `pushScheduler` viene eseguita ogni 5 minuti e controlla gli utenti con `remOn=true`. Usa il fuso orario salvato nel profilo e la fascia 08:00–22:00.
 
-### 4. Su iPhone
-1. Apri Hydro con Safari.
-2. Aggiungi Hydro alla schermata Home.
-3. Accedi al tuo account.
-4. In Impostazioni incolla la chiave VAPID pubblica e salvala.
-5. Premi **ATTIVA** nelle notifiche.
-6. Accetta il permesso.
-7. Usa **Invia notifica di prova** per verificare il permesso locale.
-8. Se Apple Watch è configurato per ricevere le notifiche dell'app iPhone, potrà mostrarle quando iOS inoltra la notifica.
+> Le funzioni pianificate usano Cloud Scheduler e richiedono un progetto Firebase/Google Cloud con fatturazione attiva (piano Blaze). Il costo dipende dall'utilizzo; un singolo job di scheduler è sufficiente per tutti gli utenti di Hydro.
 
-> Importante: la notifica di prova mostrata immediatamente da Hydro è locale. La notifica ricorrente con app chiusa arriva invece dalla Cloud Function tramite FCM.
+### Test push già eseguito
 
+Per verificare FCM manualmente:
+1. accedere a Hydro;
+2. autorizzare le notifiche;
+3. verificare `pushTokens` in Firestore;
+4. usare **Invia messaggio di prova** nella console Firebase Cloud Messaging;
+5. incollare il token FCM nel pannello di test.
 
-## Nota sicurezza Firebase
-La Web API key presente nella configurazione client è una Firebase API key pubblica. Firebase documenta che queste chiavi identificano il progetto/app e non autorizzano l'accesso ai dati; l'autorizzazione è gestita da Firebase Authentication e Firestore Security Rules. Non inserire mai nel repository chiavi private di Service Account, client secret o credenziali server.
+Questo test è già stato completato con ricezione corretta della notifica su iPhone.
 
+## GitHub Pages
 
-## Funzioni ereditate da 8.2.2
-- Registrazione e accesso Firebase con gestione dettagliata degli errori.
-- Sincronizzazione cloud separata dalla creazione dell'account.
-- Protezione dal trasferimento accidentale dei dati locali tra account diversi.
-- Verifica della connessione Firebase dall'app.
-- Inserimento manuale mantenuto come unico metodo per quantità personalizzate.
+Hydro può continuare a essere pubblicato su GitHub Pages in HTTPS. La PWA resta utilizzabile offline; per ricevere nuove notifiche automatiche il dispositivo deve essere online.
 
-## Struttura aggiunta in 8.3.2
-- `firebase-messaging-sw.js`: service worker FCM per notifiche in background.
-- `functions/index.js`: invio programmato dei promemoria.
-- `functions/package.json`: dipendenze backend.
-- `firebase.json`: configurazione Functions + Firestore rules.
-- `firestore.rules`: accesso ai token limitato al proprietario dell'account.
+## iPhone
 
-## Offline
-La persistenza locale e Firestore offline restano attivi. L'uso quotidiano di Hydro non richiede una connessione continua; la registrazione/login iniziale e la ricezione di nuove notifiche push richiedono invece la rete.
+Per Web Push su iPhone/iPadOS:
+1. aprire Hydro in Safari;
+2. aggiungerlo alla schermata Home;
+3. accedere all'account;
+4. autorizzare le notifiche;
+5. verificare che in Impostazioni compaia **Dispositivo registrato / ATTIVE**.
+
+Se Apple Watch è configurato per inoltrare le notifiche dell'iPhone, può mostrarle secondo le impostazioni di iOS/watchOS.
+
+## Offline e sincronizzazione
+
+Hydro continua a registrare i dati localmente e usa Firestore per la sincronizzazione dell'account. Le notifiche automatiche vengono calcolate lato server, quindi richiedono la connessione del dispositivo al momento della consegna.
