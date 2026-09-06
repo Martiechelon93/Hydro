@@ -14,8 +14,8 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 messaging.onBackgroundMessage(payload => {
   const d = payload.data || {};
-  const title = d.title || 'Hydro 💧';
-  const body = d.body || 'È il momento di bere un po’ d’acqua.';
+  const title = d.title || '💧 È ora di bere!';
+  const body = d.body || 'Bevi un po’ d’acqua.';
   const tag = d.type === 'hydro_test' ? 'hydro-test' : 'hydro-reminder';
   self.registration.showNotification(title, {
     body,

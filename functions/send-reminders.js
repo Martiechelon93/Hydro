@@ -6,7 +6,7 @@ admin.initializeApp({
 
 const db = admin.firestore();
 const messaging = admin.messaging();
-const VERSION = '8.4.16';
+const VERSION = '8.4.17';
 const DEFAULT_ACTIVE_START_MIN = 8 * 60;
 const DEFAULT_ACTIVE_END_MIN = 22 * 60;
 
@@ -70,10 +70,8 @@ async function sendReminder(userRef, local, totalMl, goal) {
     tokens: tokenRows.map(x => x.token),
     data: {
       type: 'hydro_reminder', date: local.date,
-      title: '💧 È il momento di bere',
-      body: remaining > 0
-        ? `Hai bevuto ${totalMl.toLocaleString('it-IT')} ml su ${goal.toLocaleString('it-IT')} ml. Un po\' d\'acqua adesso ti aiuta a continuare.`
-        : 'Hai raggiunto il tuo obiettivo di oggi. Continua così!',
+      title: '💧 È ora di bere!',
+      body: 'Bevi un po’ d’acqua.' ,
       remainingMl: String(remaining), totalMl: String(totalMl), goalMl: String(goal),
       url: 'https://martiechelon93.github.io/Hydro/',
     },
@@ -99,7 +97,6 @@ async function sendTestPush(userRef, local, requestedTokenId) {
   } else {
     tokenRows = await getTokens(userRef);
   }
-  if (!tokenRows.length) return {sent: 0, removed: 0};
   if (!tokenRows.length) return {sent: 0, removed: 0};
   const response = await messaging.sendEachForMulticast({
     tokens: tokenRows.map(x => x.token),
